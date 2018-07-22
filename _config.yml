@@ -1,14 +1,14 @@
 # Site Info
 title:              "Taylor Gibb"
-description:        "A minimalist Jekyll theme"
-author_name:        "Heiswayi Nrird" # change this to your name
-logo_url:           https://avatars2.githubusercontent.com/u/13660108?v=4 # Get it from GitHub API: https://api.github.com/users/<username>
+description:        "0x2b || ~0x2b thats the real question"
+author_name:        "Taylor Gibb"
+logo_url:           https://avatars2.githubusercontent.com/u/13660108?v=4 
 
 # Site Settings
 url:                https://taylorgibb.github.io # main url
 baseurl:            ""
-permalink:          /:title # Post permalink
-timezone:           Asia/Kuala_Lumpur # https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
+permalink:          /blog/:title # Post permalink
+timezone:           Africa/Johannesburg
 mathjax:            true  # enables support for mathjax - set to 'false' to disable
 
 # Site Build
