@@ -1,19 +1,19 @@
 ---
-title: Disposable Infrastructure on Microsoft Azure
+title: Azure Functions + Container Instances
 updated: 2018-08-16 18:12
 ---
 
-I have a node.js application that does some short-lived work and for years i have used crontab to execute the application on a schedule. This would run until termination and then the machine would wait for crontab to start the process all over again. Recently, i got an urge to fix this and started looking at Docker. Im sure everyone knows what Docker is, so im going to cut to the chase, there were a few things that crossed my mind:
+We have a node.js application that does some short-lived work and for years we have used crontab to execute the application on a schedule. This would run until termination and then the machine would wait for crontab to start the process all over again. Recently, we got an urge to fix this and started looking at Docker. Im sure everyone knows what Docker is, so lets cut to the chase. There were a few things that crossed my mind:
 
-* I could rent a VM and install Docker and use crontab to run the container on a schedule
-* I could have an always running Docker container on ACI and use crontab inside the container
-* I could have a time based Azure function that creates a container on demand 
+* We could rent a VM and install Docker and use crontab to run the container on a schedule
+* We could have an always running Docker container on ACI and use crontab inside the container
+* We could have a time based Azure function that creates a container on demand 
 
-[WRITE SOME THINGS ABOUT COSTING HERE]
+We ended up going with the last approach based on the costing shown in this [Azure Pricing Calculator estimate](https://azure.com/e/38ccb2b0d20b48358113517def97cdb6) that we put together. The virtual machine, which is an Azure A0 instance weighs in at 0.75.GBs of RAM and sports a single Intel Xeon E5-2630 v3 core with a price tag of $19.74 per month. Option two: running an always on contaniner as an Azure Conatiner Instance with 1GB of RAM and 1 vCPU would set us back $51.84, with the last option of using Azure Functions to provision and delete the containers on the same spec hardware coming in at $12.96 per month. Azure Container Instances have a significant advantage over using a virtual machine for this short-lived work, and that is that container instances are billed per second, while virtual machines are rounded up to the nearest hour.
 
-## Container-fu
+#### Container
 
-The first thing i needed to do was actually containerize the application, which was ridiculously easy. I started with a base image that already had node and python configured as these were the only dependencies i had.
+The first thing we need to do is actually containerize the application, which is ridiculously easy. We can start with an open source base image that already had node and python configured and craft the following `Dockerfile`.
 
 ```ruby
 FROM beevelop/nodejs-python:latest
@@ -24,21 +24,21 @@ COPY . /app
 CMD node src/index.js
 ```
 
-I built the Docker image and pushed it into a private Docker Hub repository, after testing it locally on my machine. 
+Next we need to build the Docker image and push it into a private Docker Hub repository.
 
 ```bash
 docker run -t taylorgibb/simple-sync
 docker push taylorgibb/simple-sync
 ```
 
-## Azure-fu
+### Creating a Service Principal
 
-For security and billing reasons, we are going to want this function to run under its own service prinicipal. So the first thing we need to do is register a new application and service prinicipal with the appropriate permissions. To do this, we will two things, [http://gnuwin32.sourceforge.net/packages/openssl.htm](openssl) and the [https://docs.microsoft.com/en-us/cli/azure/install-azure-cli?view=azure-cli-latest](Azure cli tools.) 
+We are going to want this function to run under its own service prinicipal. So the first thing we need to do is register a new application and service prinicipal with the appropriate permissions. To do this, we will two things, [openssl](http://gnuwin32.sourceforge.net/packages/openssl.htm) and the [Azure cli tools.](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli?view=azure-cli-latest) 
 
-First up, we need to generate a good `secret`, `openssl` is a useful tool to use for this.
+First up, we need to generate a good `secret`, openssl is a useful tool to use for this.
 
 ```bash
-opensl rand -base64 24
+openssl rand -base64 24
 ```
 
 We then need to use that create our application in Azure Active Directory.
@@ -56,20 +56,30 @@ This will retun an `application identifier` to us, which we can use to create th
 az ad create --id $APPLICATION_ID
 ```
 
-The last step is assigning a role to your newly created service principal.
+The last step is creating a resource group and assigning a role to our newly created service principal. The `az account list` command will give us the subscription ID we need to do the role assignmentace.
 
 ```bash
-az role assignment create --assignee http://example.com/my-app --role Contributor --scope /subscriptions/$SUBSCRIPTION)_ID/resourceGroups/my-apps-resource-group.
+az group create --location westus 
+                --name simple-sync
+
+az account list
+
+az role assignment create --assignee http://developerhut.co.za
+                          --role Contributor 
+                          --scope /subscriptions/$SUBSCRIPTION_ID/resourceGroups/simple-sync
 ```
 
+That was a lot of effort. Nevertheless, we now have a service principal that is constrained to the bounds of our resource group. In addition to better security, we also get better billing and peace of mind.
 
-Next i needed to write an Azure function that could spawn me one of these containers on request. I had never written an Azure function before, but a few searches later and i was installing the [https://github.com/Azure/azure-functions-core-tools](Azure Function Core Tools)
+### The Functions
+
+Next we needed to write an Azure function that could spawn us one of these containers on request. We had never written an Azure function before, but a few searches later and we were installing the [Azure Function Core Tools](https://github.com/Azure/azure-functions-core-tools)
 
 ```bash
 npm install -g azure-function-core-tools
 ```
 
-Once i had the tools installed, i need to create a new Function App and then create the actual function itself. I am going to be creating a TimerTrigger using the JavaScript language option and will call my function `provision`
+Once we have the tools installed, we need to create a new Function App and then create the actual function withing the app. We are going to be creating a time based function using the JavaScript language option and will call my function `provision`
 
 ```bash
 func init -n
@@ -77,7 +87,7 @@ func new
 func host start
 ```
 
-I then cracked open the `index.js` file inside the `provision` directory and replaced the boiler plate code with my own. My container is hosted in a Docker Hub registry, so you will notice i pass in a `imageRegistryCredentials` parameter so that Azure knows where to get my container from.
+We then need to crack open the `index.js` file inside the `provision` directory and replace the boiler plate code with our own. Our container is hosted in a Docker Hub registry, so you will notice us pass in a `imageRegistryCredentials` parameter so that Azure knows where to get our container from.
 
 ```javascript
 module.exports = function (context) {
@@ -111,14 +121,14 @@ module.exports = function (context) {
  };
 ```
 
-I also ran `npm init` in the `provision` folder so that npm will generate me a `package.json` file. I then added the two dependencies you see above. 
+We also need to run `npm init` in the `provision` folder so that npm will generate us a `package.json` file. We can then added the two dependencies you see above. 
 
 ```
 npm install --save azure-arm-containerinstance
 npm install --save ms-rest-azure
 ```
 
-I also edited the cron expression in my `function.json` file. I tried a couple of online cron expression generators, but Azure didnt like them all. I found [https://codehollow.com/2017/02/azure-functions-time-trigger-cron-cheat-sheet](this) article very useful for crafting expressions. After modification, the trigger was set to fire daily, and looked as follows:
+We also need to edit the cron expression in the `function.json` file. We tried a couple of online cron expression generators, but Azure didnt like the expression they generated. I found [this](https://codehollow.com/2017/02/azure-functions-time-trigger-cron-cheat-sheet) article very useful for crafting expressions. After modification, the trigger was set to fire daily, and looked as follows:
 
 ```javascript
 {
@@ -133,4 +143,5 @@ I also edited the cron expression in my `function.json` file. I tried a couple o
   ]
 }
 ```
-You will notice a bunch of environment variables in the above script, these are things that we dont want commited to source control.
+
+You will notice a bunch of environment variables in the above script, these are things that we dont want commited to source control. We can declare them in a special file called `` this file is in the functions .gitignore file and wont be commited to source control.

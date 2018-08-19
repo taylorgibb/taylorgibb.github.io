@@ -14,7 +14,7 @@ Plugman is a useful tool that helps with developing and managing Cordova plugins
 $ npm install -g plugman
 ```
 
-We can then use it to scaffold the skeleton for our project, inlcuding a plugin.xml file
+We can then use it to scaffold the skeleton for our project, inlcuding a `plugin.xml` file
 
 ```bash
 $ plugman create --name datatracker 
@@ -24,14 +24,14 @@ $ plugman create --name datatracker
 $ plugman platform add --platform_name android
 ```
 
-You will find a file called `plugin.xml` in the root of the newely scaffolded project, we need to make a few tweaks to that before we get started:
+You find the `plugin.xml` in the root of the newely scaffolded project, we need to make a few tweaks to that before we get started:
 
 * adding the appropriate application permissions
 * adding minimum sdk requirements
 * merging an xml namespace to the manifest
-* changed the clobber target from `cordova.plugins.datatracker` to `developerhut`
+* changing the clobber target from `cordova.plugins.datatracker` to `developerhut`
 
-Once the changes have been made, our `plugin.xml` file looks like this:
+Once we have made the changes, our `plugin.xml` file should look like this:
 
 ```xml
 <?xml version='1.0' encoding='utf-8'?>
