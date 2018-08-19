@@ -115,7 +115,7 @@ module.exports = function (context) {
         }).then((r) => {
             context.done();
         }).catch((r) => {
-                context.done();
+            context.done();
         });
     });   
  };
@@ -144,7 +144,7 @@ We also need to edit the cron expression in the `function.json` file. We tried a
 }
 ```
 
-You will notice a bunch of environment variables in the above script, these are things that we dont want commited to source control. We can declare them in a special file called `local.settings.json` this file is in the functions .gitignore file and wont be commited to source control by default. Our `local.settings.json` looks like this, slightly edited to remove sensitive information.
+You will notice a bunch of environment variables in the above script, these are things that we dont want commited to source control. We can declare them in a special file called `local.settings.json` which lives in the root of your function app. This file is in the function apps `.gitignore` file by default and wont be commited to source control. Our `local.settings.json` looks like this, slightly edited to remove sensitive information.
 
 ```javascript
 {
@@ -162,5 +162,4 @@ You will notice a bunch of environment variables in the above script, these are 
     
   }
 }
-
 ```
