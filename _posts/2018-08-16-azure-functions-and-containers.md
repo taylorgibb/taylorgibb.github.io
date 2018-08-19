@@ -135,7 +135,7 @@ We also need to edit the cron expression in the `function.json` file. We tried a
   "disabled": false,
   "bindings": [
     {
-      "name": "myTimer",
+      "name": "startTimer",
       "type": "timerTrigger",
       "direction": "in",
       "schedule": "0 0 0 * * *"
@@ -144,4 +144,23 @@ We also need to edit the cron expression in the `function.json` file. We tried a
 }
 ```
 
-You will notice a bunch of environment variables in the above script, these are things that we dont want commited to source control. We can declare them in a special file called `` this file is in the functions .gitignore file and wont be commited to source control.
+You will notice a bunch of environment variables in the above script, these are things that we dont want commited to source control. We can declare them in a special file called `local.settings.json` this file is in the functions .gitignore file and wont be commited to source control by default. Our `local.settings.json` looks like this, slightly edited to remove sensitive information.
+
+```javascript
+{
+  "IsEncrypted": false,
+  "Values": {
+    "AzureWebJobsStorage": "DefaultEndpointsProtocol=https;AccountName=simple;AccountKey=KEY",
+    "AZURE_CLIENT_ID": "fghd04aa-490c-4323-932g9-3374ba37b96a",
+    "AZURE_CLIENT_SECRET": "Zm/AI5cYyWSdyZoS6",
+    "AZURE_TENANT_ID": "ccf08dsdas-asddas-asdc-9f11e490d18f",
+    "AZURE_SUBSCRIPTION_ID": "12f88basdas33-asdas-13e-sadsdddd",
+    "DOCKER_USERNAME": "whoami",
+    "DOCKER_PASSWORD": "whatisthisdockerthing"  
+  },
+  "ConnectionStrings": {
+    
+  }
+}
+
+```
