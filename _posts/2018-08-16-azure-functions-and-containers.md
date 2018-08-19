@@ -144,13 +144,54 @@ We also need to edit the cron expression in the `function.json` file. We tried a
 }
 ```
 
-You will notice a bunch of environment variables in the above script, these are things that we dont want commited to source control. We can declare them in a special file called `local.settings.json` which lives in the root of your function app. This file is in the function apps `.gitignore` file by default and wont be commited to source control. Our `local.settings.json` looks like this, slightly edited to remove sensitive information.
+We now need to follow the above steps and create another function called `delete`. Just as above, we will have to run `npm init` to initialize the project and then install the required modules via `npm` with the `--save` flag.  The contents of the function is below,
+
+```javascript
+module.exports = function (context) {
+    const ACI   = require('azure-arm-containerinstance');
+    const AZ    = require('ms-rest-azure');
+
+    AZ.loginWithServicePrincipalSecret(
+        process.env.AZURE_CLIENT_ID,
+        process.env.AZURE_CLIENT_SECRET,
+        process.env.AZURE_TENANT_ID,
+        (err, credentials) => {
+            if (err) {
+                throw err;
+            }
+            let client = new ACI(credentials, process.env.AZURE_SUBSCRIPTION_ID);
+            client.containerGroups.deleteMethod('karocki', 'karocki-containers').then((r) => {
+                context.log('Delete completed', r);
+            });
+    });
+};
+```
+
+The `delete` function only needs to get executed 6 hours after the `provision` function has started the container, so it has a slightly different `function.json` definition too.
+
+```javascript
+{
+  "disabled": false,
+  "bindings": [
+    {
+      "name": "endTimer",
+      "type": "timerTrigger",
+      "direction": "in",
+      "schedule": "0 0 6 * * *"
+    }
+  ]
+}
+```
+
+
+
+Lastly will notice a bunch of environment variables in the above script, these are things that we dont want commited to source control. We can declare them in a special file called `local.settings.json` which lives in the root of your function app. This file is in the function apps `.gitignore` file by default and wont be commited to source control. Our `local.settings.json` looks like this, slightly edited to remove sensitive information.
 
 ```javascript
 {
   "IsEncrypted": false,
   "Values": {
-    "AzureWebJobsStorage": "DefaultEndpointsProtocol=https;AccountName=simple;AccountKey=KEY",
+    "AzureWebJobsStorage": "",
     "AZURE_CLIENT_ID": "fghd04aa-490c-4323-932g9-3374ba37b96a",
     "AZURE_CLIENT_SECRET": "Zm/AI5cYyWSdyZoS6",
     "AZURE_TENANT_ID": "ccf08dsdas-asddas-asdc-9f11e490d18f",
