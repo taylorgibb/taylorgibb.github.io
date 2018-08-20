@@ -160,7 +160,7 @@ module.exports = function (context) {
                 throw err;
             }
             let client = new ACI(credentials, process.env.AZURE_SUBSCRIPTION_ID);
-            client.containerGroups.deleteMethod('karocki', 'karocki-containers').then((r) => {
+            client.containerGroups.deleteMethod('simple', 'simple-containers').then((r) => {
                 context.log('Delete completed', r);
             });
     });
