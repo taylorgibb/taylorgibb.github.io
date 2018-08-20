@@ -1,5 +1,7 @@
+/* Overrides for Syntax Highlighter */
+
 .highlight {
- margin: initial;
+    margin: initial;
 }
 
 article {
@@ -8,4 +10,10 @@ article {
 
 ul, ol{
     margin: 20px 0;
+}
+
+/* Disqus comment overrides */
+#disqus_thread {
+    max-width: 750px;
+    margin: 0 auto;
 }
