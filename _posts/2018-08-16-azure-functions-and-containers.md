@@ -4,17 +4,17 @@ updated: 2018-08-16 18:12
 comments: true
 ---
 
-We have a node.js application that does some short-lived work and for years we have used crontab to execute the application on a schedule. This would run until termination and then the machine would wait for crontab to start the process all over again. Recently, we got an urge to fix this and started looking at Docker. Im sure everyone knows what Docker is, so lets cut to the chase. There were a few things that crossed my mind:
+I have a node.js application that does some short-lived work and for years i have used crontab to execute the application on a schedule. This would run the application until termination and then the machine would wait for crontab to start the process all over again. Recently, i got an urge to fix this and started looking at Docker. Im sure everyone knows what Docker is, so im going to cut to the chase. There were a few things that crossed my mind:
 
-* We could rent a VM and install Docker and use crontab to run the container on a schedule
-* We could have an always running Docker container on ACI and use crontab inside the container
-* We could have a time based Azure function that creates a container on demand 
+* I could rent a VM and install Docker and use cron to run the container on a schedule
+* I could have an always running Docker container on ACI and use cron inside the container
+* I could have a time based Azure function that creates and deletes containers on demand 
 
-We ended up going with the last approach based on the costing shown in this [Azure Pricing Calculator estimate](https://azure.com/e/38ccb2b0d20b48358113517def97cdb6) that we put together. The virtual machine, which is an Azure A0 instance weighs in at 0.75.GBs of RAM and sports a single Intel Xeon E5-2630 v3 core with a price tag of $19.74 per month. Option two: running an always on contaniner as an Azure Conatiner Instance with 1GB of RAM and 1 vCPU would set us back $51.84, with the last option of using Azure Functions to provision and delete the containers on the same spec hardware coming in at $12.96 per month. Azure Container Instances have a significant advantage over using a virtual machine for this short-lived work, and that is that container instances are billed per second, while virtual machines are rounded up to the nearest hour.
+I ended up going with the last approach based on the costing shown in this [Azure Pricing Calculator estimate](https://azure.com/e/38ccb2b0d20b48358113517def97cdb6) that i put together. In terms of pricing, the virtual machine, which is an Azure A0 instance weighs in at 0.75.GBs of RAM and sports a single Intel Xeon E5-2630 v3 core with a price tag of $19.74 per month. Option two: running an always on container as an Azure Container Instance with 1GB of RAM and 1 vCPU would set us back $51.84 per month, with the last option of using Azure Functions to create and delete the containers on the same spec hardware coming in at $12.96 per month. It's also worth noting that Virtual Machines are billed per hour, while Azure Container Instances are billed per second. 
 
 #### Container
 
-The first thing we need to do is actually containerize the application, which is ridiculously easy. We can start with an open source base image that already had node and python configured and craft the following `Dockerfile`.
+The first thing i needed to do is actually containerize the application, which was ridiculously easy. We can start with an open source base image that already had node and python configured and craft the following `Dockerfile`. Everyone's `Dockerfile` is going to look different, but nevertheless, this is what it took to containerize my application.
 
 ```ruby
 FROM beevelop/nodejs-python:latest
@@ -25,7 +25,7 @@ COPY . /app
 CMD node src/index.js
 ```
 
-Next we need to build the Docker image and push it into a private Docker Hub repository.
+Next i needed to build the Docker image and push it into a private Docker Hub repository.
 
 ```bash
 docker run -t taylorgibb/simple-sync
@@ -34,15 +34,15 @@ docker push taylorgibb/simple-sync
 
 ### Creating a Service Principal
 
-We are going to want this function to run under its own service prinicipal. So the first thing we need to do is register a new application and service prinicipal with the appropriate permissions. To do this, we will two things, [openssl](http://gnuwin32.sourceforge.net/packages/openssl.htm) and the [Azure cli tools.](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli?view=azure-cli-latest) 
+I needed this function to run under its own service principal. So the first thing i had to do was register a new application and service principal with the appropriate permissions. To do this, i needed two things, [openssl](http://gnuwin32.sourceforge.net/packages/openssl.htm)and the [Azure cli tools.](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli?view=azure-cli-latest) 
 
-First up, we need to generate a good `secret`, openssl is a useful tool to use for this.
+First we needed to generate a good `secret` to start with, openssl proved to be a useful tool to use for this.
 
 ```bash
 openssl rand -base64 24
 ```
 
-We then need to use that create our application in Azure Active Directory.
+Now i can register my application in Azure Active Directory.
 
 ```bash
 az ad app create --display-name simple-sync
@@ -51,13 +51,13 @@ az ad app create --display-name simple-sync
                  --password $SECRET
 ```
 
-This will retun an `application identifier` to us, which we can use to create the service principal.
+This returned an `application identifier` to me, which i used to create the service principal.
 
 ```bash
 az ad create --id $APPLICATION_ID
 ```
 
-The last step is creating a resource group and assigning a role to our newly created service principal. The `az account list` command will give us the subscription ID we need to do the role assignmentace.
+The last step was creating a resource group and assigning a role to my newly created service principal. The `az account list` command will give me the subscription ID i need to do the role assignment.
 
 ```bash
 az group create --location westus 
@@ -70,17 +70,17 @@ az role assignment create --assignee http://developerhut.co.za
                           --scope /subscriptions/$SUBSCRIPTION_ID/resourceGroups/simple-sync
 ```
 
-That was a lot of effort. Nevertheless, we now have a service principal that is constrained to the bounds of our resource group. In addition to better security, we also get better billing and peace of mind.
+That was a lot of effort. Nevertheless, i now have a service principal that is constrained to the bounds of my resource group. In addition to better security, we also get better billing and peace of mind.
 
 ### The Functions
 
-Next we needed to write an Azure function that could spawn us one of these containers on request. We had never written an Azure function before, but a few searches later and we were installing the [Azure Function Core Tools](https://github.com/Azure/azure-functions-core-tools)
+Next we needed to write a couple of Azure functions that coud create and delete our containers on a schedule. I had never written an Azure function before, but a few searches later and i was installing the [Azure Function Core Tools](https://github.com/Azure/azure-functions-core-tools)
 
 ```bash
 npm install -g azure-function-core-tools
 ```
 
-Once we have the tools installed, we need to create a new Function App and then create the actual function withing the app. We are going to be creating a time based function using the JavaScript language option and will call my function `provision`
+Once i had the tools installed, i needed to create a new Function App and then create the actual functions within the app. I am going to be creating a time based function using the JavaScript language option and will call my function `provision`, this is the first of the two functions i will create.
 
 ```bash
 func init -n
@@ -88,7 +88,7 @@ func new
 func host start
 ```
 
-We then need to crack open the `index.js` file inside the `provision` directory and replace the boiler plate code with our own. Our container is hosted in a Docker Hub registry, so you will notice us pass in a `imageRegistryCredentials` parameter so that Azure knows where to get our container from.
+I then needed to crack open the `index.js` file inside the `provision` directory and replace the boilerplate code with our own. My container is hosted in the Docker Hub registry, so you will notice that i pass in a `imageRegistryCredentials` parameter so that Azure knows where to get our container from.
 
 ```javascript
 module.exports = function (context) {
@@ -122,14 +122,14 @@ module.exports = function (context) {
  };
 ```
 
-We also need to run `npm init` in the `provision` folder so that npm will generate us a `package.json` file. We can then added the two dependencies you see above. 
+Next, i needed to run `npm init` in the `provision` folder so that npm would generate a `package.json` file. I could then added the two dependencies you see in the above code. 
 
 ```
 npm install --save azure-arm-containerinstance
 npm install --save ms-rest-azure
 ```
 
-We also need to edit the cron expression in the `function.json` file. We tried a couple of online cron expression generators, but Azure didnt like the expression they generated. I found [this](https://codehollow.com/2017/02/azure-functions-time-trigger-cron-cheat-sheet) article very useful for crafting expressions. After modification, the trigger was set to fire daily, and looked as follows:
+I also needed to edit the cron expression in the `function.json` file. I tried a couple of online cron expression generators, but Azure didn't like the expressions that they generated. I found [this](https://codehollow.com/2017/02/azure-functions-time-trigger-cron-cheat-sheet) article very useful for crafting expressions. After modification, the trigger was set to fire daily, and looked as follows:
 
 ```javascript
 {
@@ -145,7 +145,7 @@ We also need to edit the cron expression in the `function.json` file. We tried a
 }
 ```
 
-We now need to follow the above steps and create another function called `delete`. Just as above, we will have to run `npm init` to initialize the project and then install the required modules via `npm` with the `--save` flag.  The contents of the function is below,
+Finally, i follow the above steps again and create another function called `delete`. Just as above, i had to run `npm init` to initialize the project and then install the required modules via `npm` with the `--save` flag.  The contents of the `delete` function is below.
 
 ```javascript
 module.exports = function (context) {
@@ -168,7 +168,7 @@ module.exports = function (context) {
 };
 ```
 
-The `delete` function only needs to get executed 6 hours after the `provision` function has started the container, so it has a slightly different `function.json` definition too.
+The `delete` function gets executed 6 hours after the `provision` function has started the container, so it has a slightly different `function.json` definition too.
 
 ```javascript
 {
@@ -183,6 +183,8 @@ The `delete` function only needs to get executed 6 hours after the `provision` f
   ]
 }
 ```
+
+
 
 
 
