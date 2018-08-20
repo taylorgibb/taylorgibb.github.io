@@ -4,6 +4,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 {% if page.title %} <title>{{ page.title }}</title> {% else %} <title>{{ site.title }}</title> {% endif %}
 <meta name="description" content="{% if page.excerpt %}{{ page.excerpt | strip_html | strip_newlines | truncate: 160 }}{% else %}{{ site.description }}{% endif %}" />
+<meta property="og:image" content="{{ "/assets/facebook.png" | prepend: site.baseurl | prepend: site.url }}"/>
 
 <link rel="icon" href="{{ "/assets/favicon.png" | prepend: site.baseurl | prepend: site.url }}">
 <link rel="apple-touch-icon" href="{{ "/assets/touch-icon.png" | prepend: site.baseurl | prepend: site.url }}">
