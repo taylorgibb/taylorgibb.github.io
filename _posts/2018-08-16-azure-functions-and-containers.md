@@ -1,6 +1,7 @@
 ---
 title: Azure Functions + Container Instances
 updated: 2018-08-16 18:12
+comments: true
 ---
 
 We have a node.js application that does some short-lived work and for years we have used crontab to execute the application on a schedule. This would run until termination and then the machine would wait for crontab to start the process all over again. Recently, we got an urge to fix this and started looking at Docker. Im sure everyone knows what Docker is, so lets cut to the chase. There were a few things that crossed my mind:
