@@ -1,6 +1,7 @@
 ---
 title: Writing an Android Cordova Plugin
 updated: 2018-07-22 18:12
+published: false
 ---
 
 Over a year a go i was contracted to write a proof of concept application for a digital agency. The idea behind the app was that we would monitor your data usage
