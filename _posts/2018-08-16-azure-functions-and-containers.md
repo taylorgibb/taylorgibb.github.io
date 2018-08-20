@@ -50,7 +50,6 @@ az ad app create --display-name simple-sync
                  --identifier-uris http://developerhut.co.za
                  --password $SECRET
 ```
-
 This returned an `application identifier` to me, which i used to create the service principal.
 
 ```bash
@@ -60,7 +59,7 @@ az ad create --id $APPLICATION_ID
 The last step was creating a resource group and assigning a role to my newly created service principal. The `az account list` command will give me the subscription ID i need to do the role assignment.
 
 ```bash
-az group create --location westus 
+az group create --location westeurope
                 --name simple-sync
 
 az account list
@@ -83,12 +82,12 @@ npm install -g azure-function-core-tools
 Once i had the tools installed, i needed to create a new Function App and then create the actual functions within the app. I am going to be creating a time based function using the JavaScript language option and will call my function `provision`, this is the first of the two functions i will create.
 
 ```bash
-func init -n
+func init simple-functions
 func new
 func host start
 ```
 
-I then needed to crack open the `index.js` file inside the `provision` directory and replace the boilerplate code with our own. My container is hosted in the Docker Hub registry, so you will notice that i pass in a `imageRegistryCredentials` parameter so that Azure knows where to get our container from.
+I then needed to crack open the `index.js` file inside the `provision` directory and replace the boilerplate code with our own. My container is hosted in the Docker Hub registry, so you will notice that i pass in a `imageRegistryCredentials` parameter so that Azure knows where to get our container from. I am creating a Linux container in West Europe but the function is easy enough to change.
 
 ```javascript
 module.exports = function (context) {
@@ -168,7 +167,7 @@ module.exports = function (context) {
 };
 ```
 
-The `delete` function gets executed 6 hours after the `provision` function has started the container, so it has a slightly different `function.json` definition too.
+I only wanted the  `delete` function to get executed 6 hours after the `provision` function had started the container, so it has a slightly different `function.json` definition too.
 
 ```javascript
 {
@@ -184,26 +183,36 @@ The `delete` function gets executed 6 hours after the `provision` function has s
 }
 ```
 
+At this point, i committed my code to a private Github repository
 
+```bash
+az storage account create --name simplestorage --location westeurope --resource-group simple-sync --sku Standard_LRS
 
-
-
-Lastly will notice a bunch of environment variables in the above script, these are things that we dont want commited to source control. We can declare them in a special file called `local.settings.json` which lives in the root of your function app. This file is in the function apps `.gitignore` file by default and wont be commited to source control. Our `local.settings.json` looks like this, slightly edited to remove sensitive information.
-
-```javascript
-{
-  "IsEncrypted": false,
-  "Values": {
-    "AzureWebJobsStorage": "",
-    "AZURE_CLIENT_ID": "fghd04aa-490c-4323-932g9-3374ba37b96a",
-    "AZURE_CLIENT_SECRET": "Zm/AI5cYyWSdyZoS6",
-    "AZURE_TENANT_ID": "ccf08dsdas-asddas-asdc-9f11e490d18f",
-    "AZURE_SUBSCRIPTION_ID": "12f88basdas33-asdas-13e-sadsdddd",
-    "DOCKER_USERNAME": "whoami",
-    "DOCKER_PASSWORD": "whatisthisdockerthing"  
-  },
-  "ConnectionStrings": {
-    
-  }
-}
+az functionapp create --deployment-source-url https://github.com/taylorgibb/simple-sync
+                      --resource-group simple-sync 
+                      --consumption-plan-location westeurope 
+                      --name simple-functions
+                      --storage-account simplestorage
 ```
+
+
+In the two functions above, i use environment variables to keep sensitive information from being committed to source control. By definition, environment variables, are configured in the environment itself and that means we need to add a few more things to Azure. The settings i added were generated in the first part of the article on creating a service principal, along with some fake Docker Hub credentials. It goes without saying that these values will need to be substituted with your own if you are following along. 
+
+```bash
+az functionapp config appsettings set --name simple-functions
+                                      --resource-group simple
+                                      --settings AZURE_CLIENT_ID=XXX 
+                                                 AZURE_CLIENT_SECRET=XXX
+                                                 AZURE_TENANT_ID=XXX
+                                                 AZURE_SUBSCRIPTION_ID=XXX 
+                                                 DOCKER_USERNAME=XXX 
+                                                 DOCKER_PASSWORD=XXX 
+```
+
+Now that all my config is complete, i used some nifty helper methods to mirror it onto my local machine so that i could test the functions locally in the future if i need to. When we run the below, it pulls all the settings into a special file called `local.settings.json` which lives in the root of your function app. The `local.settings.json` file is in the `.gitignore` by default and wont be committed to source control, keeping all your secrets safe.
+
+```bash
+func azure functionapp fetch-app-settings simple-functions
+```
+
+Thats pretty much all there was to it. At this point, i logged into the Azure portal and manually ran the `provision` function and verified that it created a new container instance, i then ran the `delete` function and ensured the container instance was removed. I ran into a couple of issues while making this, most notably with the Azure Function Core Tools there is a bug that prevents you from publishing functions from the command line if your function contains a `node_modules` folder. You can read more about that over [here](https://github.com/Azure/azure-functions-core-tools/issues/352). 
