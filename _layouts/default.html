@@ -1,7 +1,9 @@
 ---
 layout: compress
 published: true
-comments: true
+comments: false
+header: true
+footer: true
 ---
 
 <!DOCTYPE html>
@@ -10,13 +12,17 @@ comments: true
 		{% include head.html %}
 	</head>
 	<body>
-		{% include header.html %}
+		{% if page.header %}
+			{% include header.html %}
+		{% endif %}	
 		<div id="content">
 			{{ content }}
 		</div>
 		{% if page.comments %}
 			{% include comments.html %}
 		{% endif %}	
-		{% include footer.html %}
+		{% if page.footer %}
+			{% include footer.html %}
+		{% endif %}	
 	</body>
 </html>
