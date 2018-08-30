@@ -26,7 +26,7 @@ header: false
         </div>
     </div>
     <div class="controls">
-        <button class="btn draw-border">Upload</button>
+        <button class="btn">Upload</button>
     </div>
 </div>
 
