@@ -1,4 +1,5 @@
 ---
+layout: post
 title: Azure Functions + Container Instances
 updated: 2018-08-16 18:12
 comments: true

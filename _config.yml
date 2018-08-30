@@ -9,7 +9,7 @@ url:                https://taylorgibb.github.io # main url
 baseurl:            ""
 permalink:          /blog/:title # Post permalink
 timezone:           Africa/Johannesburg
-mathjax:            true  # enables support for mathjax - set to 'false' to disable
+mathjax:            false  # enables support for mathjax - set to 'false' to disable
 
 # Site Build
 highlighter:        rouge
@@ -21,7 +21,7 @@ sass:
 
 # Other Params
 include:            [ "robots.txt" ]
-exclude:            [ "LICENSE", "README.md", "CNAME", "vendor", "Gemfile", "script" ]
+exclude:            [ "LICENSE", "README.md", "CNAME", "vendor", "Gemfile"]
 plugins:
   - jekyll-sitemap
 

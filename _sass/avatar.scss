@@ -33,13 +33,12 @@ $desktop-width: 1024px;
     align-items: center;
     flex-direction: column;
     .avatar-preview {  
-        border: 8px solid black;
+        border: 3px solid black;
         border-radius: 100%;
         box-shadow: 0px 2px 10px 1px rgba(0, 0, 0, 1);
         box-sizing: content-box;
         height: 250px;
         img{
-            transform: 'rotate(-14deg)';
             height: 250px;
         }
     }
@@ -72,7 +71,7 @@ $desktop-width: 1024px;
     button {
         outline: none;
         background: transparent !important;
-        border: 5px solid black !important;
+        border: 3px solid black !important;
         padding: 15px 40px !important;
         font-size: 1.2em !important;
         font-weight: bold !important;

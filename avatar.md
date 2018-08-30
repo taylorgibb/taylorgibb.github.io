@@ -1,6 +1,5 @@
 ---
 layout: page
-header: false
 ---
 
 <div class="avatar-container">
