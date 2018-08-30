@@ -62,7 +62,7 @@ $desktop-width: 1024px;
             }
             .slider{
                 margin: 4px 0px 0px 0px;
-                width: calc(80vw - 90px);
+                width: calc(80vw - 110px);
                 @include desktop{
                     width: 280px;
                 }
