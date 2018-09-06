@@ -28,38 +28,31 @@ module.exports = function (context, req) {
             
             image.color(filters)
                  .rotate(targetRotation > 0 ? -Math.abs(targetRotation) : Math.abs(targetRotation))
-                 .resize(400, 400)
-                 .write('preview.png')
-                 .getBase64(Jimp.MIME_JPEG, (a,b,c)=> {
-                    var twitter = new Twit({
+                 .resize(300, 300)
+                 image.write('preview.png')
 
-                    });
-        
-                    var imageBase64 = fs.readFileSync('2.png', {encoding: 'base64'});
-                    twitter.post('account/update_profile_image', {image: b}, function (error, data) {
-        
-                        var timestamp = new Date().toISOString();
-                        console.log('\nLog: ' + timestamp);
-                        if (error) {
-                            console.log('Failed to update profile image.');
-                            console.log(error);
-                        } else {
-                            fs.writeFileSync(lastImagePath, newImage);
-                            console.log('Wrote last image: ' + newImage);
-                            console.log('Updated profile image: ' + data.profile_image_url);
-                        }
-            
-                    });
-                 })
-            
-          
-            //image.getBase64("image/png", function(a, b, c) {
-             //   console.log(b.substring(0, 200));
+            var twitter = new Twit({
+                "consumer_key": 'YdjYSC0X7zRYM2ChkmIEaQ',
+                "consumer_secret": 'XmdyEH69ztkTX61uprwjipvqlNBUP9doDBn1OFUJc',
+                "access_token": '217000716-1qrBcC2Wu6h5KxNd2qfkK5tV6W8MTCn8gFOIblWD',
+                "access_token_secret": 'e8h3gMlxARwgN1NYU9FS1YuapMVD2b7AmUqSKs0RWh02v'
+            });
 
-               
+             var imageBase64 = fs.readFileSync('preview2.png', {encoding: 'base64'});
+            twitter.post('account/update_profile_image', {image: imageBase64}, function (error, data) {
 
-   
-          //  })
+                var timestamp = new Date().toISOString();
+                console.log('\nLog: ' + timestamp);
+                if (error) {
+                    console.log('Failed to update profile image.');
+                    console.log(error);
+                } else {
+                    fs.writeFileSync(lastImagePath, newImage);
+                    console.log('Wrote last image: ' + newImage);
+                    console.log('Updated profile image: ' + data.profile_image_url);
+                }
+    
+            });
         })
         .catch(err => {
             context.log(err);
