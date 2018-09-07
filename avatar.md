@@ -80,7 +80,7 @@ layout: page
         }
         
         $('button').click(function() {
-            $.getJSON( `http://127.0.0.1:7071/api/avatar?hue=${h}&saturation=${s}&brightness=${b}&rotation=${rotate}`, function( data ) {
+            $.getJSON( `https://tweet-avatar.azurewebsites.net/api/avatar?code=XiwxXOWN3RcIaIgB10cK7KJrzoqJwaxlbyHktbTvgm9/QfM0IV33yA==&hue=${h}&saturation=${s}&brightness=${b}&rotation=${rotate}`, function( data ) {
                 console.log(data);
             })
         })
