@@ -9,9 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "fs": "0.0.1-security",
     "jimp": "^0.4.0",
-    "request": "^2.88.0",
     "twit": "^2.2.11"
   }
 }

@@ -1,47 +1,44 @@
 var Jimp = require('jimp');
-var request = require('request');
 var Twit = require('twit');
 var fs = require('fs');
 
 module.exports = function (context, req) {
-    var targetHue = req.query.hue || 180;
-    var targetSaturation = req.query.saturation || 100;
-    var targetBrightness = req.query.brightness || 85;
-    var targetRotation = req.query.rotation || 0;
+    var targetHue =  parseInt(req.query.hue);
+    var targetSaturation = parseInt(req.query.saturation);
+    var targetBrightness = parseInt(req.query.brightness);
+    var targetRotation = parseInt(req.query.rotation);
 
-    Jimp.read('avatar.png')
+    context.log(targetHue + ' ' + targetSaturation + ' ' + targetBrightness + ' ' + targetRotation);
+
+    Jimp.read('https://www.taylorgibb.com/assets/avatar.png')
         .then(image => {
+
             var filters = [
                 { apply: 'hue', params: [targetHue] },
-                { apply: 'saturate', params: [targetSaturation] }
+                { apply: 'saturate', params: [targetSaturation] },
+                { apply: 'lighten', params: [Math.abs(100 - targetBrightness)] }
             ];
 
-            if (targetBrightness > 100) {
-                //  filters.push( { apply: 'lighten', params: [Math.abs(100 - targetBrightness)] });
-            }
-            else {
-                //  filters.push( { apply: 'darken', params: [100 - targetBrightness] })
-            }
-
-            image.color(filters)
+           image.color(filters)
                 .rotate(targetRotation > 0 ? -Math.abs(targetRotation) : Math.abs(targetRotation))
-                .resize(400, 400)
-                .write('preview.png',
-                    () => {
-                        console.log('uploading')
+                .getBase64(Jimp.MIME_PNG, 
+                    (error,image) => {
+
+                        context.log(error);
+
                         var twitter = new Twit({
-                            "consumer_key": 'YdjYSC0X7zRYM2ChkmIEaQ',
-                            "consumer_secret": 'XmdyEH69ztkTX61uprwjipvqlNBUP9doDBn1OFUJc',
-                            "access_token": '217000716-1qrBcC2Wu6h5KxNd2qfkK5tV6W8MTCn8gFOIblWD',
-                            "access_token_secret": 'e8h3gMlxARwgN1NYU9FS1YuapMVD2b7AmUqSKs0RWh02v'
+                            "consumer_key": process.env.TWITTER_CONSUMER_KEY,
+                            "consumer_secret": process.env.TWITTER_CONSUMER_SECRET,
+                            "access_token": process.env.TWITTER_ACCESS_TOKEN,
+                            "access_token_secret": process.env.TWITTER_ACCESS_TOKEN_SECRET
                         });
-                        var imageBase64 = fs.readFileSync('preview.png', { encoding: 'base64' });
-                        twitter.post('account/update_profile_image', { image: imageBase64 }, function (error, data) {
+
+
+                        twitter.post('account/update_profile_image', { image: image.substring(22) }, function (error, data) {
                             if (error) {
-                                console.log('Failed to update profile image.');
-                                console.log(error);
+                                context.log(error);
                             } else {
-                                console.log('Updated profile image: ' + data.profile_image_url);
+                                context.log('Updated profile image: ' + data.profile_image_url);
                             }
 
                         });
@@ -56,4 +53,3 @@ module.exports = function (context, req) {
     };
     context.done();
 }
-
