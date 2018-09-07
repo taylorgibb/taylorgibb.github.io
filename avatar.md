@@ -35,6 +35,7 @@ layout: page
         var saturation = getRandom(1, 9);
         var brightness = getRandom(1, 9);
         var rotate = 0;
+        var h, s, b;
 
         $('#hue').val(hue);
         $('#saturation').val(saturation);
@@ -69,13 +70,19 @@ layout: page
         }
 
         function update(){
-            var h = Math.floor(360 * (hue / 256.0));
-            var s = Math.floor(200 * (saturation / 8.0));
-            var b = 80 + Math.floor(40 * (brightness / 8.0));
+             h = Math.floor(360 * (hue / 256.0));
+             s = Math.floor(100 * (saturation / 8.0));
+             b = 80 + Math.floor(40 * (brightness / 8.0));
 		    $('#avatar').css({
                 'filter':'hue-rotate(' + h + 'deg) saturate(' + s + '%) brightness(' + b + '%) ',
                 'transform': 'rotate(' + rotate + 'deg)'
 		    });
-	    }
+        }
+        
+        $('button').click(function() {
+            $.getJSON( `http://127.0.0.1:7071/api/avatar?hue=${h}&saturation=${s}&brightness=${b}&rotation=${rotate}`, function( data ) {
+                console.log(data);
+            })
+        })
     })
 </script>
