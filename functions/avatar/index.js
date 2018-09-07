@@ -7,9 +7,9 @@ module.exports = function (context, req) {
     var targetHue = req.query.hue || 180;
     var targetSaturation = req.query.saturation || 100;
     var targetBrightness = req.query.brightness || 85;
-    var targetRotation = req.query.rotation || -14;
+    var targetRotation = req.query.rotation || 0;
 
-    Jimp.read('https://www.taylorgibb.com/assets/avatar.png')
+    Jimp.read('avatar.png')
         .then(image => {
             var filters = [
                 { apply: 'hue', params: [targetHue] },
@@ -25,8 +25,10 @@ module.exports = function (context, req) {
 
             image.color(filters)
                 .rotate(targetRotation > 0 ? -Math.abs(targetRotation) : Math.abs(targetRotation))
+                .resize(400, 400)
                 .write('preview.png',
                     () => {
+                        console.log('uploading')
                         var twitter = new Twit({
                             "consumer_key": 'YdjYSC0X7zRYM2ChkmIEaQ',
                             "consumer_secret": 'XmdyEH69ztkTX61uprwjipvqlNBUP9doDBn1OFUJc',
