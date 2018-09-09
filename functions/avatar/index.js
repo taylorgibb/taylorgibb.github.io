@@ -23,8 +23,9 @@ module.exports = function (context, req) {
                 .rotate(targetRotation > 0 ? -Math.abs(targetRotation) : Math.abs(targetRotation))
                 .getBase64(Jimp.MIME_PNG, 
                     (error,image) => {
-
-                        context.log(error);
+                        if(error){
+                            context.log(error);
+                        }
 
                         var twitter = new Twit({
                             "consumer_key": process.env.TWITTER_CONSUMER_KEY,
@@ -33,14 +34,12 @@ module.exports = function (context, req) {
                             "access_token_secret": process.env.TWITTER_ACCESS_TOKEN_SECRET
                         });
 
-
-                        twitter.post('account/update_profile_image', { image: image.substring(22) }, function (error, data) {
+                        twitter.post('account/update_profile_image', { image: image }, function (error, data) {
                             if (error) {
                                 context.log(error);
                             } else {
                                 context.log('Updated profile image: ' + data.profile_image_url);
                             }
-
                         });
                     });
         })
