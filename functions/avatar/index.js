@@ -4,56 +4,61 @@ var fs = require('fs');
 
 module.exports = function (context, req) {
     var targetHue =  parseInt(req.query.hue);
-    var targetSaturation = parseInt(req.query.saturation);
-    var targetBrightness = parseInt(req.query.brightness);
+    var targetSaturation = Math.max(parseInt(req.query.saturation), 1);
     var targetRotation = parseInt(req.query.rotation);
 
-    context.log(targetHue + ' ' + targetSaturation + ' ' + targetBrightness + ' ' + targetRotation);
+    context.log(targetHue + ' ' + targetSaturation + ' ' + targetRotation);
 
     Jimp.read('https://www.taylorgibb.com/assets/avatar.png')
-        .then(image => {
-
-            var filters = [
+        .then(image => {  
+            let filters = [
                 { apply: 'hue', params: [targetHue] },
-                { apply: 'saturate', params: [targetSaturation] },
-                { apply: 'lighten', params: [Math.abs(100 - targetBrightness)] }
             ];
+
+            if(targetSaturation){
+                let method = targetSaturation >= 50 ? 'saturate' : 'desaturate';
+                let saturation = targetSaturation >= 50 ? ((targetSaturation - 50) * 2): 100 - ((targetSaturation) * 2); 
+                context.log(method + ' ' + saturation)
+                filters.push( { apply: method, params: [saturation] },)
+            }
 
            image.color(filters)
                 .rotate(targetRotation > 0 ? -Math.abs(targetRotation) : Math.abs(targetRotation))
-                .getBase64(Jimp.MIME_PNG, 
-                    (error,image) => {
-                        if(error){
-                            context.log(error);
-                        }
+                .getBase64Async(Jimp.MIME_PNG)
+                .then((image) => {
+                    var twitter = new Twit({
+                        "consumer_key": process.env.TWITTER_CONSUMER_KEY,
+                        "consumer_secret": process.env.TWITTER_CONSUMER_SECRET,
+                        "access_token": process.env.TWITTER_ACCESS_TOKEN,
+                        "access_token_secret": process.env.TWITTER_ACCESS_TOKEN_SECRET
+                    });
 
-                        var twitter = new Twit({
-                            "consumer_key": process.env.TWITTER_CONSUMER_KEY,
-                            "consumer_secret": process.env.TWITTER_CONSUMER_SECRET,
-                            "access_token": process.env.TWITTER_ACCESS_TOKEN,
-                            "access_token_secret": process.env.TWITTER_ACCESS_TOKEN_SECRET
-                        });
-
-                        twitter.post('account/update_profile_image', { image: image }, function (error, data) {
-                            if (error) {
-                                context.log(error);
-                            } else {
-                                context.log('GREAT_SUCCESS: ' + data.profile_image_url);
+                    twitter.post('account/update_profile_image', { image: image.substr(22) })
+                           .catch(function (err) {
+                                context.log(err.stack);
                                 context.res = {
-                                    body: { 
-                                        msg:  "GREAT_SUCCESS",
-                                        img: data.profile_image_url
-                                    }
+                                    body: { msg: "ERROR", data: err.stack }
+                                }
+                                context.done(); 
+                            })
+                           .then((result) => {
+                                context.log('Img Url: ' + result.data.profile_image_url);
+                                context.res = {
+                                    body: { msg: "GREAT_SUCCESS", data: result.data.profile_image_url }
                                 }
                                 context.done();
-                            }
-                        });
                     });
-        })
-        .then(() => {
 
+                    
+                }) 
         })
         .catch(err => {
             context.log(err);
+            context.res = {
+                body: { msg: "ERROR", data: err.stack }
+            }
+            context.done();
         });
+         
+
 }

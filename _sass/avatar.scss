@@ -12,25 +12,25 @@ $desktop-width: 1024px;
     @content;
   }
 }
+body {
+    padding: 0px !important;
+}
 
 .avatar-container {
+    cursor: pointer !important;
     padding-top: 30px;
     @include desktop {
         padding-top: 120px;
     }
     overflow: hidden;
     font-family: 'Roboto Slab', serif !important;
-    position: absolute;
-    top:0; 
-    left: 0;
-    right: 0;
-    bottom: 0;
     background: #ddd;
     width: 100%;
     height: 100%;
     display: flex;
     justify-content: flex-start;
     align-items: center;
+    min-height: 100vh;
     flex-direction: column;
     .avatar-preview {  
         border: 3px solid black;
@@ -70,6 +70,9 @@ $desktop-width: 1024px;
     }
     .controls{
         button {
+            min-width: 160px;
+            min-height: 40px;
+            line-height: 1em;
             outline: none;
             background: transparent !important;
             border: 3px solid black !important;
@@ -79,6 +82,13 @@ $desktop-width: 1024px;
             text-transform: uppercase !important;
         }
         margin-bottom: 30px;
+    }
+
+    .text {
+        width: 80%;
+        text-align: center;
+        margin-bottom: 50px;
+    
     }
 
 
