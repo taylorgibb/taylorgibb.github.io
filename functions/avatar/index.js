@@ -38,17 +38,22 @@ module.exports = function (context, req) {
                             if (error) {
                                 context.log(error);
                             } else {
-                                context.log('Updated profile image: ' + data.profile_image_url);
+                                context.log('GREAT_SUCCESS: ' + data.profile_image_url);
+                                context.res = {
+                                    body: { 
+                                        msg:  "GREAT_SUCCESS",
+                                        img: data.profile_image_url
+                                    }
+                                }
+                                context.done();
                             }
                         });
                     });
         })
+        .then(() => {
+
+        })
         .catch(err => {
             context.log(err);
         });
-
-    context.res = {
-        body: "GREAT_SUCCESS"
-    };
-    context.done();
 }
