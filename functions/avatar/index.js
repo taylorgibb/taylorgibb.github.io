@@ -19,7 +19,7 @@ module.exports = function (context, req) {
                 let method = targetSaturation >= 50 ? 'saturate' : 'desaturate';
                 let saturation = targetSaturation >= 50 ? ((targetSaturation - 50) * 2): 100 - ((targetSaturation) * 2); 
                 context.log(method + ' ' + saturation)
-                filters.push( { apply: method, params: [saturation] },)
+                filters.push( { apply: method, params: [saturation] })
             }
 
            image.color(filters)

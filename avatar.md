@@ -30,12 +30,7 @@ layout: page
         <div> You can see the changes appear on my Twitter profile. Source code can be viewed here.</div>
     </div>
 </div>
-<style>
-    body {
-    margin: 0;
-    padding: 0;
-}
-</style>
+
 <script>
     $(document).ready(function() {
         var hue = getRandom(1, 256);
@@ -81,12 +76,17 @@ layout: page
         $('button').click(function() {
             $('.controls button span').css({'display': 'none'});
             $('.controls button i').css({'display': 'block'});
-            
-            var url = `https://tweet-avatar.azurewebsites.net/api/avatar?code=XiwxXOWN3RcIaIgB10cK7KJrzoqJwaxlbyHktbTvgm9/QfM0IV33yA==`;
-            $.getJSON( `${url}&hue=${h}&saturation=${s}&rotation=${rotate}`, function( data ) {
+            $.getJSON( `https://tweet-avatar.azurewebsites.net/api/avatar?code=XiwxXOWN3RcIaIgB10cK7KJrzoqJwaxlbyHktbTvgm9/QfM0IV33yA==&hue=${h}&saturation=${s}&rotation=${rotate}`, function( data ) {
                 $('.controls button span').css({'display': 'block'});
                 $('.controls button i').css({'display': 'none'});
             })
-        })
-    })
+        });
+    });
 </script>
+
+<style>
+    body {
+    margin: 0;
+    padding: 0;
+}
+</style>
