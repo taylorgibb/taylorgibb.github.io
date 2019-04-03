@@ -7,6 +7,21 @@
     
       
         <item>
+          <title>CSS Filters</title>
+          <description>&lt;p&gt;Last year i decided i was going to write a little application that allowed people to change certain properties pertaining to my Twitter profile picture. With the introduction of CSS Filters, and in particular the &lt;code class=&quot;highlighter-rouge&quot;&gt;hue-rotate&lt;/code&gt; function, i thought this was going to be a fairly trivial task. My plan was to use a combination of the &lt;code class=&quot;highlighter-rouge&quot;&gt;hue-rotate&lt;/code&gt; and &lt;code class=&quot;highlighter-rouge&quot;&gt;rotate&lt;/code&gt; CSS capabilities to manipulate an avatar on a webpage, and then submit the data to an Azure function that would in turn manipulate a raw copy of the image before publishing it to Twitter. The problem i quickly ran into is that the &lt;code class=&quot;highlighter-rouge&quot;&gt;hue-rotate&lt;/code&gt; CSS Filter uses linear matrix approximation in the RGB colour space to perform the hue rotation and doesnt actually convert the values into HSV or HSL. This effectively meant that when i applied the same filter values using a server side image manipulation library i got completely different results, which my friends were quick to point out.&lt;/p&gt;
+
+&lt;p&gt;You can read more about that particular issue &lt;a href=&quot;https://stackoverflow.com/questions/19187905/why-doesnt-hue-rotation-by-180deg-and-180deg-yield-the-original-color&quot;&gt;here&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;I decided to give it another go this afternoon with great results. Ultimately i ended up using &lt;a href=&quot;https://github.com/oliver-moran/jimp&quot;&gt;Jimp&lt;/a&gt; on the server and &lt;a href=&quot;https://github.com/jseidelin/pixastic&quot;&gt;Pixastic&lt;/a&gt; on the client side. The source code for the web page can be found over &lt;a href=&quot;https://github.com/taylorgibb/taylorgibb.github.io/blob/master/lab/avatar.md&quot;&gt;here&lt;/a&gt;, and the code for the function lives &lt;a href=&quot;https://github.com/taylorgibb/taylorgibb.github.io/blob/master/functions/avatar/index.js&quot;&gt;here&lt;/a&gt;. If you feel the need, you can even head over to &lt;a href=&quot;https://www.taylorgibb.com/lab/avatar.html&quot;&gt;my lab and change the picture yourself&lt;/a&gt;.&lt;/p&gt;
+</description>
+          <pubDate>2019-04-03T00:00:00+02:00</pubDate>
+          <link>http://localhost:4000/blog/css-filters</link>
+          <guid isPermaLink="true">http://localhost:4000/blog/css-filters</guid>
+        </item>
+      
+    
+      
+        <item>
           <title>Azure Functions + Container Instances</title>
           <description>&lt;p&gt;I have a node.js application that does some short-lived work and for years i have used crontab to execute the application on a schedule. This would run the application until termination and then the machine would wait for crontab to start the process all over again. Recently, i got an urge to fix this and started looking at Docker. Im sure everyone knows what Docker is, so im going to cut to the chase. There were a few things that crossed my mind:&lt;/p&gt;
 
