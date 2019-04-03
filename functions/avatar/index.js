@@ -6,7 +6,7 @@ module.exports = function (context, req) {
     var targetHue =  parseFloat(req.query.hue) * 360;
     var targetRotation = parseInt(req.query.rotation);
 
-    Jimp.read('https://www.taylorgibb.com/assets/avatar.png')
+    Jimp.read('https://www.taylorgibb.com/assets/avatar-raw.png')
         .then(image => {  
             let filters = [
                 { apply: 'hue', params: [targetHue] },
