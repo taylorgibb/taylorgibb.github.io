@@ -95,7 +95,7 @@ layout: page
         $('button').click(function() {
             $('.controls button span').css({'display': 'none'});
             $('.controls button i').css({'display': 'block'});
-            $.getJSON( `https://tweet-avatar.azurewebsites.net/api/avatar?code=XiwxXOWN3RcIaIgB10cK7KJrzoqJwaxlbyHktbTvgm9/QfM0IV33yA==?hue=${options["hue"]}&saturation=${options["saturation"]}&lightness=${options["lightness"]}&rotation=${rotate}`, function( data ) {
+            $.getJSON( `https://tweet-avatar.azurewebsites.net/api/avatar?code=XiwxXOWN3RcIaIgB10cK7KJrzoqJwaxlbyHktbTvgm9/QfM0IV33yA==&hue=${options["hue"]}&saturation=${options["saturation"]}&lightness=${options["lightness"]}&rotation=${rotate}`, function( data ) {
                 $('.controls button span').css({'display': 'block'});
                 $('.controls button i').css({'display': 'none'});
             })

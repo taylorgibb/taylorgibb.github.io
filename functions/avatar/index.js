@@ -15,7 +15,7 @@ module.exports = function (context, req) {
 
            image.color(filters)
                 .rotate(targetRotation > 0 ? -Math.abs(targetRotation) : Math.abs(targetRotation))
-                .write("test.png")
+                .getBase64Async(Jimp.MIME_PNG)
                 .then((image) => {
                     var twitter = new Twit({
                         "consumer_key": process.env.TWITTER_CONSUMER_KEY,
