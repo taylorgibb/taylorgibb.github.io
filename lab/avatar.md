@@ -14,7 +14,7 @@ layout: page
     <div class="avatar-toggles">
         <div class="toggle">
             <label>Hue</label>
-            <input class="slider" id="hue" type="range" min="-360" max="360" /> 
+            <input class="slider" id="hue" type="range" min="-180" max="180" /> 
         </div>
         <div class="toggle">
             <label>Rotation</label>
@@ -51,9 +51,9 @@ layout: page
             lightness : lightness 
         };
 
-        $('#hue').val(hue * 360);
+        $('#hue').val(hue * 180);
         $('#hue').on('change', function(){
-            options["hue"] = parseInt($(this).val(), 10) / 360;
+            options["hue"] = parseInt($(this).val(), 10) / 180;
             console.log(options["hue"]);
 		    update();
         });
