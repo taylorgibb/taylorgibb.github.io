@@ -18,12 +18,12 @@ On the client side i have two sliders, rotation is pretty straight forward so i 
 <img style="display: none" id="avatar" src="/assets/avatar.png">
 ```
 
-I also needed a way to adjust the value of the hue. Hue is typically expressed on a color wheel with values from `0` to `360` degrees. I needed a range slider that went from `-180` to `180` to replicate this.
+I also needed a way to adjust the value of the hue. Hue is typically expressed on a color wheel with values from `0` to `360` degrees. 
 
 ```html
 <div class="toggle">
     <label>Hue</label>
-    <input class="slider" id="hue" type="range" min="-180" max="180" /> 
+    <input class="slider" id="hue" type="range" min="0" max="360" /> 
 </div>
 ```
 
@@ -31,7 +31,7 @@ From there i attached an event handler that converted the values and scaled them
 
 ```javascript
 $('#hue').on('change', function(){
-    options["hue"] = parseInt($(this).val(), 10) / 180;
+    options["hue"] = parseInt($(this).val(), 10) / 360;
     update();
 });
 ```
@@ -49,7 +49,6 @@ function update(){
         canvas = document.getElementById("output-canvas"),
         ctx = canvas.getContext("2d");
 
-    img.style.display = "none";
     canvas.style.display = "none";
     canvas.width = img.width;
     canvas.height = img.height;
@@ -65,6 +64,6 @@ function update(){
 
 Once you are done and you click upload, the values from the sliders are submitted to an Azure function.
 
-
+#### Server Side
 
 I decided to give it another go this afternoon with great results. Ultimately i ended up using [Jimp](https://github.com/oliver-moran/jimp) on the server and [Pixastic](https://github.com/jseidelin/pixastic) on the client side. The source code for the web page can be found over [here](https://github.com/taylorgibb/taylorgibb.github.io/blob/master/lab/avatar.md), and the code for the function lives [here](https://github.com/taylorgibb/taylorgibb.github.io/blob/master/functions/avatar/index.js). If you feel the need, you can even head over to [my lab and change the picture yourself](https://www.taylorgibb.com/lab/avatar.html). 

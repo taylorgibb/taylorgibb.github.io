@@ -3,7 +3,7 @@ var Twit = require('twit');
 var fs = require('fs');
 
 module.exports = function (context, req) {
-    var targetHue =  (parseFloat(req.query.hue) * 180) * 2;
+    var targetHue =  (parseFloat(req.query.hue) * 360);
     var targetRotation = parseInt(req.query.rotation);
 
     Jimp.read('https://www.taylorgibb.com/assets/avatar-raw.png')

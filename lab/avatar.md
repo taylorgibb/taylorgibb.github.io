@@ -14,11 +14,11 @@ layout: page
     <div class="avatar-toggles">
         <div class="toggle">
             <label>Hue</label>
-            <input class="slider" id="hue" type="range" min="-180" max="180" /> 
+            <input class="slider" id="hue" type="range" min="0" max="360" /> 
         </div>
         <div class="toggle">
             <label>Rotation</label>
-            <input class="slider" id="rotation" type="range" min="-14" max="346" step="1" /> 
+            <input class="slider" id="rotation" type="range" value="-14" min="-14" max="346" step="1" /> 
         </div>
     </div>
     <div class="controls">
@@ -34,13 +34,13 @@ layout: page
 
 <script>
     $(document).ready(function() {
-        var random = function(min, max, decimals) { 
-              var rand = Math.random()*(max-min) + min;
-              var power = Math.pow(10, decimals);
-              return Math.floor(rand*power) / power;
+        var random = function(min, max) { 
+           min = Math.ceil(min);
+           max = Math.floor(max);
+           return Math.floor(Math.random() * (max - min + 1)) + min;
         };
 
-        var hue = random(-1,1,2);
+        var hue = random(0,360);
         var saturation = 0;
         var lightness = 0;
         var rotate = -14;
@@ -51,17 +51,14 @@ layout: page
             lightness : lightness 
         };
 
-        $('#hue').val(hue * 180);
+        $('#hue').val(hue);
         $('#hue').on('change', function(){
-            options["hue"] = parseInt($(this).val(), 10) / 180;
-            console.log(options["hue"]);
+            options["hue"] = parseInt($(this).val(), 10) / 360;
 		    update();
         });
 
-        $('#rotation').val(rotate);
         $('#rotation').on('change', function(){
             rotate = parseInt($(this).val(), 10);
-            console.log(rotate);
             update();
 	    });
 
@@ -69,8 +66,7 @@ layout: page
             var img = document.getElementById("avatar"),
                 canvas = document.getElementById("output-canvas"),
                 ctx = canvas.getContext("2d");
-       
-            img.style.display = "none";
+
             canvas.style.display = "none";
             canvas.width = img.width;
             canvas.height = img.height;
@@ -82,15 +78,13 @@ layout: page
                 setTimeout(function() {
                       canvas.style.display = "block";
                 }, 200)
-            }, function(p) {
-
             });
+
             $('#output-canvas').css({
                 'transform': 'rotate(' + rotate + 'deg)'
 		    });
         }
 
-        update();
 
         $('button').click(function() {
             $('.controls button span').css({'display': 'none'});
@@ -100,6 +94,8 @@ layout: page
                 $('.controls button i').css({'display': 'none'});
             })
         });
+
+        $('#hue').trigger('change');
     });
 </script>
 
