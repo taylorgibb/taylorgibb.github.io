@@ -3,6 +3,7 @@ layout: post
 title: CSS Filters
 updated: 2019-04-04 18:12
 comments: true
+published: false
 ---
 
 Last year i decided i was going to write a little application that allowed people to change certain properties pertaining to my Twitter profile picture. With the introduction of CSS Filters, and in particular the `hue-rotate` function, i thought this was going to be a fairly trivial task. My plan was to use a combination of the `hue-rotate` and `rotate` CSS capabilities to manipulate an avatar on a webpage, and then submit the data to an Azure function that would in turn manipulate a raw copy of the image before publishing it to Twitter. The problem i quickly ran into is that the `hue-rotate` CSS Filter uses linear matrix approximation in the RGB colour space to perform the hue rotation and doesnt actually convert the values into HSV or HSL. This effectively meant that when i applied the same filter values using a server side image manipulation library i got completely different results, which my friends were quick to point out. 
