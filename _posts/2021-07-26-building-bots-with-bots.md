@@ -34,12 +34,12 @@ After chatting with a few friends, it was clear that we needed to replace the de
 
 First up, we need to open Visual Studio and create a new project based on the newly installed `Core Bot` template. The template comes with a whole bunch of example files and directories that we don't need, so lets start by deleting the following:
 
-* `BookingDetails.cs`
-* `FlightBookingRecognizer.cs`
-* `BookingDialog.cs`
-* `CancelAndHelpDialog.cs`
-* `DateResolverDialog.cs`
-* `CognitiveModels`
+* BookingDetails.cs
+* FlightBookingRecognizer.cs
+* BookingDialog.cs
+* CancelAndHelpDialog.cs
+* DateResolverDialog.cs
+* CognitiveModels
 
 We then need to add a few Nuget packages to our project.
 
@@ -51,10 +51,10 @@ dotnet add package Microsoft.Bot.Builder.AI.QnA
 
 We also need to add our QnA Maker configuration to our `appsettings.json` file. 
 
-* `KnowledgebaseId` - this can be found in the QnA maker  under settings.
-* `QnAEndpointKey` - this can be found in the QnA maker  under settings
-* `ResourceName` - this is the name of the QnA Maker resource in Azure
-*  `SubscriptionKey` -  this can be found in the Azure portal under `Keys and Endpoint` on the QnA Maker resource
+* KnowledgebaseId - this can be found in the QnA maker  under settings.
+* QnAEndpointKey - this can be found in the QnA maker  under settings.
+* ResourceName - this is the name of the QnA Maker resource in Azure.
+* SubscriptionKey -  this can be found in the Azure portal under Keys and Endpoint on the QnA Maker resource.
 
 Your `appsettings.json` should look something like this once you are done.
 
