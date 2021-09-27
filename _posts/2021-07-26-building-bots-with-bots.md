@@ -505,5 +505,5 @@ services.AddSingleton<IQNAMakerService, QNAMakerService>();
 
 Thats pretty much all there is too it, lets see how it looks in action using the Bot Framework Emulator.
 
-
+<div style="width:100%;height:0;padding-bottom:61%;position:relative;"><iframe src="https://giphy.com/embed/My2ogUmJvsvXJObEt5" width="100%" height="100%" style="position:absolute" frameBorder="0" class="giphy-embed" allowFullScreen></iframe></div>
 
