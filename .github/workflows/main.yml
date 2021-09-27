@@ -1,0 +1,16 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches: [ master ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Jekyll Actions
+        uses: helaili/jekyll-action@2.2.0
+        with:
+          target_branch: master
