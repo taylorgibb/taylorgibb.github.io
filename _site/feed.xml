@@ -40,12 +40,12 @@
 &lt;p&gt;First up, we need to open Visual Studio and create a new project based on the newly installed &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Core Bot&lt;/code&gt; template. The template comes with a whole bunch of example files and directories that we don’t need, so lets start by deleting the following:&lt;/p&gt;
 
 &lt;ul&gt;
-  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;BookingDetails.cs&lt;/code&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;FlightBookingRecognizer.cs&lt;/code&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;BookingDialog.cs&lt;/code&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;CancelAndHelpDialog.cs&lt;/code&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;DateResolverDialog.cs&lt;/code&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;CognitiveModels&lt;/code&gt;&lt;/li&gt;
+  &lt;li&gt;BookingDetails.cs&lt;/li&gt;
+  &lt;li&gt;FlightBookingRecognizer.cs&lt;/li&gt;
+  &lt;li&gt;BookingDialog.cs&lt;/li&gt;
+  &lt;li&gt;CancelAndHelpDialog.cs&lt;/li&gt;
+  &lt;li&gt;DateResolverDialog.cs&lt;/li&gt;
+  &lt;li&gt;CognitiveModels&lt;/li&gt;
 &lt;/ul&gt;
 
 &lt;p&gt;We then need to add a few Nuget packages to our project.&lt;/p&gt;
@@ -58,10 +58,10 @@ dotnet add package Microsoft.Bot.Builder.AI.QnA
 &lt;p&gt;We also need to add our QnA Maker configuration to our &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;appsettings.json&lt;/code&gt; file.&lt;/p&gt;
 
 &lt;ul&gt;
-  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;KnowledgebaseId&lt;/code&gt; - this can be found in the QnA maker  under settings.&lt;/li&gt;
-  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;QnAEndpointKey&lt;/code&gt; - this can be found in the QnA maker  under settings&lt;/li&gt;
-  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;ResourceName&lt;/code&gt; - this is the name of the QnA Maker resource in Azure&lt;/li&gt;
-  &lt;li&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;SubscriptionKey&lt;/code&gt; -  this can be found in the Azure portal under &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Keys and Endpoint&lt;/code&gt; on the QnA Maker resource&lt;/li&gt;
+  &lt;li&gt;KnowledgebaseId - this can be found in the QnA maker  under settings.&lt;/li&gt;
+  &lt;li&gt;QnAEndpointKey - this can be found in the QnA maker  under settings.&lt;/li&gt;
+  &lt;li&gt;ResourceName - this is the name of the QnA Maker resource in Azure.&lt;/li&gt;
+  &lt;li&gt;SubscriptionKey -  this can be found in the Azure portal under Keys and Endpoint on the QnA Maker resource.&lt;/li&gt;
 &lt;/ul&gt;
 
 &lt;p&gt;Your &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;appsettings.json&lt;/code&gt; should look something like this once you are done.&lt;/p&gt;
