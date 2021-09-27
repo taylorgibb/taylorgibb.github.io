@@ -508,6 +508,8 @@ dotnet add package Microsoft.Bot.Builder.AI.QnA
 
 &lt;p&gt;Thats pretty much all there is too it, lets see how it looks in action using the Bot Framework Emulator.&lt;/p&gt;
 
+&lt;div style=&quot;width:100%;height:0;padding-bottom:61%;position:relative;&quot;&gt;&lt;iframe src=&quot;https://giphy.com/embed/My2ogUmJvsvXJObEt5&quot; width=&quot;100%&quot; height=&quot;100%&quot; style=&quot;position:absolute&quot; frameborder=&quot;0&quot; class=&quot;giphy-embed&quot; allowfullscreen=&quot;&quot;&gt;&lt;/iframe&gt;&lt;/div&gt;
+
 </description>
           <pubDate>2021-07-26T00:00:00+02:00</pubDate>
           <link>https://taylorgibb.github.io/blog/building-bots-with-bots</link>
