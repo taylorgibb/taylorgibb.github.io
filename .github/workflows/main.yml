@@ -10,7 +10,5 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Jekyll Actions
-        uses: helaili/jekyll-action@2.2.0
-        with:
-          target_branch: master
+      - uses: lemonarc/jekyll-action@1.0.0
+
