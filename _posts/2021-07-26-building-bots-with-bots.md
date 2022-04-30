@@ -3,7 +3,6 @@ layout: post
 title: Building Bots with Bots
 updated: 2021-09-27 18:12
 comments: true
-publised: false
 ---
 
 In a [recent study](https://www.gartner.com/smarterwithgartner/chatbots-will-appeal-to-modern-workers) by Gartner, they estimated that as many as 70% of white collar workers will interact with chat bots on a daily basis by 2022. Just this year in South Africa, we have seen a number of multinationals launch their chat bot technology alongside other market leaders.
