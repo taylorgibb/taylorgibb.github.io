@@ -78,7 +78,7 @@ using (var writer = new StreamWriter(file))
     sw.Close();
     watch.Stop();
 
-    Console.WriteLine($"Written {count} Records in {watch.Elapsed} ");
+    Console.WriteLine($"Written {count} Records In {watch.Elapsed} ");
 }
 ```
 
@@ -112,7 +112,7 @@ for (int i = 0; i < 1000000; i++)
 }
 ```
 
-This looks much better, it takes 6 seconds to generate 100 000 strings and just under a minute to generate 1 000 000 of them. This will do for testing and save hours generating data, so i updated the app as follows.
+This looks much better, it takes 6 seconds to generate a hundred thousand strings and just under a minute to generate a million of them. This will do for testing and save hours generating data, so i updated the app as follows.
 
 ```csharp
 class Program
@@ -171,7 +171,7 @@ class Program
             sw.Close();
             watch.Stop();
 
-            Console.WriteLine($"Written {count} Records in {watch.Elapsed} ");
+            Console.WriteLine($"Written {count} Records In {watch.Elapsed} ");
         }
     }
 
