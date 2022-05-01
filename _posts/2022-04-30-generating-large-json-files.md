@@ -5,7 +5,7 @@ updated: 2022-04-30 20:01
 comments: true
 ---
 
-I recently had a customer with a requirement to expose an API that was capable of handling millions of JSON objects at a time. When the system was designed their inbound API only supported CSV. This design decision was made due to the large data involved. With CSV files, you include a header row which means the column names are not duplicated for each row, unlike JSON where each object would have a property name and its corresponding value. They gave me a small CSV file which contained a header row and an additional 145 objects. The file weighed in at just over `17KB`. Converting that to JSON gave me 6527 lines of JSON (a `4400 percent increase ` in lines), weighing in at just over `205KB`(a `1200 percent increase` in file size). Even on small scale, the difference is noticeable. This data needed to be read and put into a database which is the subject of my next blog post, so stay tuned.
+I recently had a customer with a requirement to expose an API that was capable of handling millions of JSON objects at a time. When the system was designed their inbound API only supported CSV. This design decision was made due to the large data involved. With CSV files, you include a header row which means the column names are not duplicated for each row, unlike JSON where each object would have a property name and its corresponding value. They gave me a small CSV file which contained a header row and an additional 145 objects. The file weighed in at just over `17KB`. Converting that to JSON gave me 6527 lines of JSON (a `4400 percent increase` in lines), weighing in at just over `205KB`(a `1200 percent increase` in file size). Even on small scale, the difference is noticeable. This data needed to be read and put into a database which is the subject of my next blog post, so stay tuned.
 
 While i was testing a few solutions it became clear that i needed a way to test with large JSON datasets but the biggest ones i could find online ranged from `25MB` to `100MB` and i wanted at least a few gigabytes of data. With large data, you quickly run into problems, in C# for example the maximum size of a CLR object is 2GB including on a 64-bit systems and even then, fragmentation of the large object heap can cause objects that are less than 2GB to cause an Out Of Memory Exception. In short, this means that you cant just make a list, add objects to it and then serialize it to disk. Instead, you need you stream the data one object at a time. The object i envisioned was the following:
 
@@ -100,7 +100,7 @@ jtw.WriteValue(faker.Person.DateOfBirth.ToShortDateString());
 jtw.WriteEndObject();
 ```
 
-The performance was not great, it wrote `X` objects but took a massive `2 hours 37 minutes` to run. It turns out Bogus takes around 13 minutes to generate a million fakes, and i need closer to 10 million. Since this is just test data, i toyed around with the idea of just using random 5 character strings and came up with the following to test my logic on a million iterations. 
+The performance was not great, it wrote `8 676 603` objects but took a massive `2 hours and 1 minute` to run. It turns out Bogus takes around 13 minutes to generate a million fakes, and i need closer to 10 million. Since this is just test data, i toyed around with the idea of just using random 5 character strings and came up with the following to test my logic on a million iterations. 
 
 ```csharp
 var random = new Random();
