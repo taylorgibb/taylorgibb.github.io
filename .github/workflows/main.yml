@@ -15,8 +15,8 @@ jobs:
           fetch-depth: 1
       - name: 🎩 Install Jekyll
         run: |
-          sudo gem install bundler jekyll
-          sudo bundle install
+          sudo gem install bundler:2.2.34 jekyll
+          sudo bundle _2.2.34_ install
       - name: 🧹 Clean site
         run: |
           if [ -d "_site" ]; then
