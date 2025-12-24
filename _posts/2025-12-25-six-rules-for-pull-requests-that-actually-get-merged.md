@@ -56,4 +56,3 @@ The tooling around code reviews is evolving rapidly. [Jared Palmer's recent twee
 Tools like [Graphite](https://graphite.dev) have been pioneering this workflow, making it possible to break large features into small, reviewable chunks without the coordination overhead. The race is heating up—Cursor recently acquired Graphite, and GitHub is adding native stacked diff support. It's clear that the industry recognizes a fundamental truth: in the AI age, where we can generate code faster than ever, we need better review tooling to keep pace.
 
 The six rules above still apply, but the tooling is finally catching up to make them easier to follow. What is your "Golden Rule" for Pull Requests?
-
