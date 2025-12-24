@@ -1,0 +1,145 @@
+<!DOCTYPE html> <html lang="en"> <head> <meta charset="utf-8"> <meta http-equiv="X-UA-Compatible" content="IE=edge"> <meta name="viewport" content="width=device-width, initial-scale=1" /> <title>Generating Large JSON Files</title> <meta name="description" content="I recently had a customer with a requirement to expose an API that was capable of handling millions of JSON objects at a time. When the system was designed t..." /> <meta property="og:image" content="https://taylorgibb.github.io/assets/facebook.png"/> <link rel="icon" href="https://taylorgibb.github.io/assets/favicon.png"> <link rel="apple-touch-icon" href="https://taylorgibb.github.io/assets/touch-icon.png"> <link rel="stylesheet" href="https://taylorgibb.github.io/assets/core.css"> <link rel="canonical" href="https://taylorgibb.github.io/blog/generating-large-json-files"> <link rel="alternate" type="application/atom+xml" title="Taylor Gibb" href="https://taylorgibb.github.io/feed.xml" /> <link href="https://fonts.googleapis.com/css?family=Roboto+Slab" rel="stylesheet"> <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css" integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous"> <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script> </head> <body> <div class="logo-container"> <div class="logo-wrapper"> <img src="/assets/avatar.png" class="logo-avatar"> </div> </div> <div id="content"> <article> <div class="center"> <h1 class="title">Generating Large JSON Files</h1> <time class="code">April 30, 2022</time> </div> <div class="divider"></div> <p>I recently had a customer with a requirement to expose an API that was capable of handling millions of JSON objects at a time. When the system was designed their inbound API only supported CSV. This design decision was made due to the large data involved. With CSV files, you include a header row which means the column names are not duplicated for each row, unlike JSON where each object would have a property name and its corresponding value. They gave me a small CSV file which contained a header row and an additional 145 objects. The file weighed in at just over <code class="language-plaintext highlighter-rouge">17KB</code>. Converting that to JSON gave me 6527 lines of JSON (a <code class="language-plaintext highlighter-rouge">4400 percent increase</code> in lines), weighing in at just over <code class="language-plaintext highlighter-rouge">205KB</code>(a <code class="language-plaintext highlighter-rouge">1200 percent increase</code> in file size). Even on small scale, the difference is noticeable. This data needed to be read and put into a database which is the subject of my next blog post, so stay tuned.</p> <p>While i was testing a few solutions it became clear that i needed a way to test with large JSON datasets but the biggest ones i could find online ranged from <code class="language-plaintext highlighter-rouge">25MB</code> to <code class="language-plaintext highlighter-rouge">100MB</code> and i wanted at least a few gigabytes of data. With large data, you quickly run into problems, in C# for example the maximum size of a CLR object is 2GB including on a 64-bit systems and even then, fragmentation of the large object heap can cause objects that are less than 2GB to cause an Out Of Memory Exception. In short, this means that you cant just make a list, add objects to it and then serialize it to disk. Instead, you need you stream the data one object at a time. The object i envisioned was the following:</p> <div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="nl">"FirstName"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Taylor"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"LastName"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Gibb"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"City"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Durban"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"Company"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Developer Hut"</span><span class="p">,</span><span class="w">
+  </span><span class="nl">"DateOfBirth"</span><span class="p">:</span><span class="w"> </span><span class="s2">"22/06/1993"</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div> <p>The logic i had in my head was:</p> <ul> <li>Write StartArray token</li> <li>While file size is less than a gigabyte, write object</li> <li>Write EndArray token</li> <li>Log object count and time elapsed</li> </ul> <p>If we use static data, this can be expressed in C# as:</p> <div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">var</span> <span class="n">file</span> <span class="p">=</span> <span class="s">@"C:\Users\taylo\Desktop\developer-hut\large-static.json"</span><span class="p">;</span>
+
+<span class="k">using</span> <span class="p">(</span><span class="kt">var</span> <span class="n">writer</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">StreamWriter</span><span class="p">(</span><span class="n">file</span><span class="p">))</span>
+<span class="p">{</span>
+    <span class="kt">var</span> <span class="n">count</span> <span class="p">=</span> <span class="m">0</span><span class="p">;</span>
+    <span class="kt">var</span> <span class="n">watch</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">Stopwatch</span><span class="p">();</span>
+    <span class="kt">var</span> <span class="n">sb</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">StringBuilder</span><span class="p">();</span>
+    <span class="kt">var</span> <span class="n">sw</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">StringWriter</span><span class="p">(</span><span class="n">sb</span><span class="p">);</span>
+    <span class="kt">var</span> <span class="n">jtw</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">JsonTextWriter</span><span class="p">(</span><span class="n">sw</span><span class="p">);</span>
+
+    <span class="n">watch</span><span class="p">.</span><span class="nf">Start</span><span class="p">();</span>
+    <span class="n">jtw</span><span class="p">.</span><span class="nf">WriteStartArray</span><span class="p">();</span>
+    <span class="n">writer</span><span class="p">.</span><span class="nf">Write</span><span class="p">(</span><span class="n">sb</span><span class="p">.</span><span class="nf">ToString</span><span class="p">());</span>
+    <span class="n">sb</span><span class="p">.</span><span class="nf">Clear</span><span class="p">();</span>
+
+    <span class="k">while</span> <span class="p">(</span><span class="k">true</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="kt">var</span> <span class="n">kb</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">FileInfo</span><span class="p">(</span><span class="n">file</span><span class="p">).</span><span class="n">Length</span> <span class="p">/</span> <span class="m">1024</span><span class="p">;</span>
+        <span class="kt">var</span> <span class="n">mb</span> <span class="p">=</span> <span class="n">kb</span> <span class="p">/</span> <span class="m">1024</span><span class="p">;</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">mb</span> <span class="p">&gt;=</span> <span class="m">1024</span><span class="p">)</span>
+        <span class="p">{</span>
+            <span class="k">break</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="n">jtw</span><span class="p">.</span><span class="nf">WriteStartObject</span><span class="p">();</span>
+        <span class="n">jtw</span><span class="p">.</span><span class="nf">WritePropertyName</span><span class="p">(</span><span class="s">"FirstName"</span><span class="p">);</span>
+        <span class="n">jtw</span><span class="p">.</span><span class="nf">WriteValue</span><span class="p">(</span><span class="s">"Taylor"</span><span class="p">);</span>
+        <span class="n">jtw</span><span class="p">.</span><span class="nf">WritePropertyName</span><span class="p">(</span><span class="s">"LastName"</span><span class="p">);</span>
+        <span class="n">jtw</span><span class="p">.</span><span class="nf">WriteValue</span><span class="p">(</span><span class="s">"Gibb"</span><span class="p">);</span>
+        <span class="n">jtw</span><span class="p">.</span><span class="nf">WritePropertyName</span><span class="p">(</span><span class="s">"City"</span><span class="p">);</span>
+        <span class="n">jtw</span><span class="p">.</span><span class="nf">WriteValue</span><span class="p">(</span><span class="s">"Durban"</span><span class="p">);</span>
+        <span class="n">jtw</span><span class="p">.</span><span class="nf">WritePropertyName</span><span class="p">(</span><span class="s">"Company"</span><span class="p">);</span>
+        <span class="n">jtw</span><span class="p">.</span><span class="nf">WriteValue</span><span class="p">(</span><span class="s">"Developer Hut"</span><span class="p">);</span>
+        <span class="n">jtw</span><span class="p">.</span><span class="nf">WritePropertyName</span><span class="p">(</span><span class="s">"DateOfBirth"</span><span class="p">);</span>
+        <span class="n">jtw</span><span class="p">.</span><span class="nf">WriteValue</span><span class="p">(</span><span class="s">"22/06/1993"</span><span class="p">);</span>
+        <span class="n">jtw</span><span class="p">.</span><span class="nf">WriteEndObject</span><span class="p">();</span>
+
+        <span class="n">writer</span><span class="p">.</span><span class="nf">Write</span><span class="p">(</span><span class="n">sb</span><span class="p">.</span><span class="nf">ToString</span><span class="p">());</span>
+        <span class="n">sb</span><span class="p">.</span><span class="nf">Clear</span><span class="p">();</span>
+        <span class="n">count</span><span class="p">++;</span>
+
+    <span class="p">}</span>
+
+    <span class="n">jtw</span><span class="p">.</span><span class="nf">WriteEndArray</span><span class="p">();</span>
+    <span class="n">writer</span><span class="p">.</span><span class="nf">Write</span><span class="p">(</span><span class="n">sb</span><span class="p">.</span><span class="nf">ToString</span><span class="p">());</span>
+    <span class="n">jtw</span><span class="p">.</span><span class="nf">Close</span><span class="p">();</span>
+    <span class="n">sw</span><span class="p">.</span><span class="nf">Close</span><span class="p">();</span>
+    <span class="n">watch</span><span class="p">.</span><span class="nf">Stop</span><span class="p">();</span>
+
+    <span class="n">Console</span><span class="p">.</span><span class="nf">WriteLine</span><span class="p">(</span><span class="s">$"Written </span><span class="p">{</span><span class="n">count</span><span class="p">}</span><span class="s"> Records In </span><span class="p">{</span><span class="n">watch</span><span class="p">.</span><span class="n">Elapsed</span><span class="p">}</span><span class="s"> "</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div></div> <p>The above resulted in exactly a gigabyte of data with <code class="language-plaintext highlighter-rouge">9 761 299</code> objects written to the JSON file in <code class="language-plaintext highlighter-rouge">2 minutes and 29 seconds</code> on my laptop which is an 11th Gen i7-11800H running at 2.30GHz, my laptop has 32GB of ram but the app only consumed around 18MB at any given moment. Not bad, but what if i want to mix things up a bit and generate some random data ? I did a quick Google and found <a href="https://github.com/bchavez/Bogus">Bogus</a> which is a C# port of <a href="https://github.com/faker-js/faker">faker.js</a> and made the following updates to the JSON object.</p> <div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">var</span> <span class="n">faker</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">Faker</span><span class="p">(</span><span class="s">"en"</span><span class="p">);</span>
+<span class="n">jtw</span><span class="p">.</span><span class="nf">WriteStartObject</span><span class="p">();</span>
+<span class="n">jtw</span><span class="p">.</span><span class="nf">WritePropertyName</span><span class="p">(</span><span class="s">"FirstName"</span><span class="p">);</span>
+<span class="n">jtw</span><span class="p">.</span><span class="nf">WriteValue</span><span class="p">(</span><span class="n">faker</span><span class="p">.</span><span class="n">Person</span><span class="p">.</span><span class="n">FirstName</span><span class="p">);</span>
+<span class="n">jtw</span><span class="p">.</span><span class="nf">WritePropertyName</span><span class="p">(</span><span class="s">"LastName"</span><span class="p">);</span>
+<span class="n">jtw</span><span class="p">.</span><span class="nf">WriteValue</span><span class="p">(</span><span class="n">faker</span><span class="p">.</span><span class="n">Person</span><span class="p">.</span><span class="n">LastName</span><span class="p">);</span>
+<span class="n">jtw</span><span class="p">.</span><span class="nf">WritePropertyName</span><span class="p">(</span><span class="s">"City"</span><span class="p">);</span>
+<span class="n">jtw</span><span class="p">.</span><span class="nf">WriteValue</span><span class="p">(</span><span class="n">faker</span><span class="p">.</span><span class="n">Person</span><span class="p">.</span><span class="n">Address</span><span class="p">.</span><span class="n">City</span><span class="p">);</span>
+<span class="n">jtw</span><span class="p">.</span><span class="nf">WritePropertyName</span><span class="p">(</span><span class="s">"Company"</span><span class="p">);</span>
+<span class="n">jtw</span><span class="p">.</span><span class="nf">WriteValue</span><span class="p">(</span><span class="n">faker</span><span class="p">.</span><span class="n">Person</span><span class="p">.</span><span class="n">Company</span><span class="p">.</span><span class="n">Name</span><span class="p">);</span>
+<span class="n">jtw</span><span class="p">.</span><span class="nf">WritePropertyName</span><span class="p">(</span><span class="s">"DateOfBirth"</span><span class="p">);</span>
+<span class="n">jtw</span><span class="p">.</span><span class="nf">WriteValue</span><span class="p">(</span><span class="n">faker</span><span class="p">.</span><span class="n">Person</span><span class="p">.</span><span class="n">DateOfBirth</span><span class="p">.</span><span class="nf">ToShortDateString</span><span class="p">());</span>
+<span class="n">jtw</span><span class="p">.</span><span class="nf">WriteEndObject</span><span class="p">();</span>
+</code></pre></div></div> <p>The performance was not great, it wrote <code class="language-plaintext highlighter-rouge">8 676 603</code> objects but took a massive <code class="language-plaintext highlighter-rouge">2 hours and 1 minute</code> to run. It turns out Bogus takes around 13 minutes to generate a million fakes, and i need closer to 10 million. Since this is just test data, i toyed around with the idea of just using random 5 character strings and came up with the following to test my logic on a million iterations.</p> <div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">var</span> <span class="n">random</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">Random</span><span class="p">();</span>
+<span class="kt">var</span> <span class="n">chars</span> <span class="p">=</span> <span class="s">"abcdefghijklmnopqrstuvwxyz0123456789"</span><span class="p">;</span>
+<span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="p">=</span> <span class="m">0</span><span class="p">;</span> <span class="n">i</span> <span class="p">&lt;</span> <span class="m">1000000</span><span class="p">;</span> <span class="n">i</span><span class="p">++)</span>
+<span class="p">{</span>
+    <span class="kt">var</span> <span class="n">str</span> <span class="p">=</span> <span class="k">new</span> <span class="kt">string</span><span class="p">(</span><span class="n">chars</span><span class="p">.</span><span class="nf">Select</span><span class="p">(</span><span class="n">c</span> <span class="p">=&gt;</span> <span class="n">chars</span><span class="p">[</span><span class="n">random</span><span class="p">.</span><span class="nf">Next</span><span class="p">(</span><span class="n">chars</span><span class="p">.</span><span class="n">Length</span><span class="p">)]).</span><span class="nf">Take</span><span class="p">(</span><span class="m">8</span><span class="p">).</span><span class="nf">ToArray</span><span class="p">());</span>
+    <span class="n">Console</span><span class="p">.</span><span class="nf">WriteLine</span><span class="p">(</span><span class="n">str</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div></div> <p>This looks much better, it takes 6 seconds to generate a hundred thousand strings and just under a minute to generate a million of them. This will do for testing and save hours generating data, so i updated the app as follows.</p> <div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">Program</span>
+<span class="p">{</span>
+    <span class="k">private</span> <span class="k">static</span> <span class="n">Random</span> <span class="n">_random</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">Random</span><span class="p">();</span>
+
+    <span class="k">static</span> <span class="k">void</span> <span class="nf">Main</span><span class="p">(</span><span class="kt">string</span><span class="p">[]</span> <span class="n">args</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="kt">var</span> <span class="n">file</span> <span class="p">=</span> <span class="s">@"C:\Users\taylo\Desktop\developer-hut\large-random-net.json"</span><span class="p">;</span>
+
+        <span class="k">using</span> <span class="p">(</span><span class="kt">var</span> <span class="n">writer</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">StreamWriter</span><span class="p">(</span><span class="n">file</span><span class="p">))</span>
+        <span class="p">{</span>
+            <span class="kt">var</span> <span class="n">count</span> <span class="p">=</span> <span class="m">0</span><span class="p">;</span>
+            <span class="kt">var</span> <span class="n">watch</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">Stopwatch</span><span class="p">();</span>
+            <span class="kt">var</span> <span class="n">sb</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">StringBuilder</span><span class="p">();</span>
+            <span class="kt">var</span> <span class="n">sw</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">StringWriter</span><span class="p">(</span><span class="n">sb</span><span class="p">);</span>
+            <span class="kt">var</span> <span class="n">jtw</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">JsonTextWriter</span><span class="p">(</span><span class="n">sw</span><span class="p">);</span>
+
+            <span class="n">watch</span><span class="p">.</span><span class="nf">Start</span><span class="p">();</span>
+            <span class="n">jtw</span><span class="p">.</span><span class="nf">WriteStartArray</span><span class="p">();</span>
+            <span class="n">writer</span><span class="p">.</span><span class="nf">Write</span><span class="p">(</span><span class="n">sb</span><span class="p">.</span><span class="nf">ToString</span><span class="p">());</span>
+            <span class="n">sb</span><span class="p">.</span><span class="nf">Clear</span><span class="p">();</span>
+
+            <span class="k">while</span> <span class="p">(</span><span class="k">true</span><span class="p">)</span>
+            <span class="p">{</span>
+                <span class="kt">var</span> <span class="n">kb</span> <span class="p">=</span> <span class="k">new</span> <span class="nf">FileInfo</span><span class="p">(</span><span class="n">file</span><span class="p">).</span><span class="n">Length</span> <span class="p">/</span> <span class="m">1024</span><span class="p">;</span>
+                <span class="kt">var</span> <span class="n">mb</span> <span class="p">=</span> <span class="n">kb</span> <span class="p">/</span> <span class="m">1024</span><span class="p">;</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">mb</span> <span class="p">&gt;=</span> <span class="m">1024</span><span class="p">)</span>
+                <span class="p">{</span>
+                    <span class="k">break</span><span class="p">;</span>
+                <span class="p">}</span>
+
+
+                <span class="n">jtw</span><span class="p">.</span><span class="nf">WriteStartObject</span><span class="p">();</span>
+                <span class="n">jtw</span><span class="p">.</span><span class="nf">WritePropertyName</span><span class="p">(</span><span class="s">"FirstName"</span><span class="p">);</span>
+                <span class="n">jtw</span><span class="p">.</span><span class="nf">WriteValue</span><span class="p">(</span><span class="nf">GetRandomString</span><span class="p">(</span><span class="m">5</span><span class="p">));</span>
+                <span class="n">jtw</span><span class="p">.</span><span class="nf">WritePropertyName</span><span class="p">(</span><span class="s">"LastName"</span><span class="p">);</span>
+                <span class="n">jtw</span><span class="p">.</span><span class="nf">WriteValue</span><span class="p">(</span><span class="nf">GetRandomString</span><span class="p">(</span><span class="m">5</span><span class="p">));</span>
+                <span class="n">jtw</span><span class="p">.</span><span class="nf">WritePropertyName</span><span class="p">(</span><span class="s">"City"</span><span class="p">);</span>
+                <span class="n">jtw</span><span class="p">.</span><span class="nf">WriteValue</span><span class="p">(</span><span class="nf">GetRandomString</span><span class="p">(</span><span class="m">5</span><span class="p">));</span>
+                <span class="n">jtw</span><span class="p">.</span><span class="nf">WritePropertyName</span><span class="p">(</span><span class="s">"Company"</span><span class="p">);</span>
+                <span class="n">jtw</span><span class="p">.</span><span class="nf">WriteValue</span><span class="p">(</span><span class="nf">GetRandomString</span><span class="p">(</span><span class="m">5</span><span class="p">));</span>
+                <span class="n">jtw</span><span class="p">.</span><span class="nf">WritePropertyName</span><span class="p">(</span><span class="s">"DateOfBirth"</span><span class="p">);</span>
+                <span class="n">jtw</span><span class="p">.</span><span class="nf">WriteValue</span><span class="p">(</span><span class="nf">GetRandomString</span><span class="p">(</span><span class="m">5</span><span class="p">));</span>
+                <span class="n">jtw</span><span class="p">.</span><span class="nf">WriteEndObject</span><span class="p">();</span>
+
+                <span class="n">writer</span><span class="p">.</span><span class="nf">Write</span><span class="p">(</span><span class="n">sb</span><span class="p">.</span><span class="nf">ToString</span><span class="p">());</span>
+                <span class="n">sb</span><span class="p">.</span><span class="nf">Clear</span><span class="p">();</span>
+                <span class="n">count</span><span class="p">++;</span>
+
+            <span class="p">}</span>
+
+            <span class="n">jtw</span><span class="p">.</span><span class="nf">WriteEndArray</span><span class="p">();</span>
+            <span class="n">writer</span><span class="p">.</span><span class="nf">Write</span><span class="p">(</span><span class="n">sb</span><span class="p">.</span><span class="nf">ToString</span><span class="p">());</span>
+            <span class="n">jtw</span><span class="p">.</span><span class="nf">Close</span><span class="p">();</span>
+            <span class="n">sw</span><span class="p">.</span><span class="nf">Close</span><span class="p">();</span>
+            <span class="n">watch</span><span class="p">.</span><span class="nf">Stop</span><span class="p">();</span>
+
+            <span class="n">Console</span><span class="p">.</span><span class="nf">WriteLine</span><span class="p">(</span><span class="s">$"Written </span><span class="p">{</span><span class="n">count</span><span class="p">}</span><span class="s"> Records In </span><span class="p">{</span><span class="n">watch</span><span class="p">.</span><span class="n">Elapsed</span><span class="p">}</span><span class="s"> "</span><span class="p">);</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="k">public</span> <span class="k">static</span> <span class="kt">string</span> <span class="nf">GetRandomString</span><span class="p">(</span><span class="kt">int</span> <span class="n">length</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="kt">var</span> <span class="n">chars</span> <span class="p">=</span> <span class="s">"abcdefghijklmnopqrstuvwxyz0123456789"</span><span class="p">;</span>
+        <span class="k">return</span> <span class="k">new</span> <span class="kt">string</span><span class="p">(</span><span class="n">chars</span><span class="p">.</span><span class="nf">Select</span><span class="p">(</span><span class="n">c</span> <span class="p">=&gt;</span> <span class="n">chars</span><span class="p">[</span><span class="n">_random</span><span class="p">.</span><span class="nf">Next</span><span class="p">(</span><span class="n">chars</span><span class="p">.</span><span class="n">Length</span><span class="p">)]).</span><span class="nf">Take</span><span class="p">(</span><span class="n">length</span><span class="p">).</span><span class="nf">ToArray</span><span class="p">());</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div> <p>This resulted in <code class="language-plaintext highlighter-rouge">11 184 822</code> objects and takes just <code class="language-plaintext highlighter-rouge">3 minutes and 2 seconds</code> which i am very happy with. Interestingly even though <a href="https://en.wikipedia.org/wiki/Windows_Notepad">Wikipedia</a> says that the maximum file size that NotePad supports was raised to a gigabyte in Windows 11, and Windows shows the file as exactly one gigabyte, i still get an error saying the file is too big. Similarly, i get an “invalid string length” error in Visual Studio Code and Sublime text just crashes when attempting to open it.</p> <p>In the next post, we will look at how we can efficiently get these 11 million objects into SQL. Fancy a guess on how long the execution will take ? Leave your thoughts in the comments below.</p> </article> </div> <div id="disqus_thread"></div> <script> var disqus_config = function () { this.page.url = "https://www.taylorgibb.com/blog/generating-large-json-files", this.page.identifier = "/blog/generating-large-json-files"; }; (function() { var d = document, s = d.createElement('script'); s.src = 'https://taylorgibb.disqus.com/embed.js'; s.setAttribute('data-timestamp', +new Date()); (d.head || d.body).appendChild(s); })(); </script> <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript> <script id="dsq-count-scr" src="//taylorgibb.disqus.com/count.js" async></script> <div class="footer"> <span class="block"><small>&lt;/&gt; Powered by <a href="https://jekyllrb.com/">Jekyll</a>, source code on <a href="https://github.com/taylorgibb/taylorgibb.github.io">Github</a></small></span> </div> </body> </html>
