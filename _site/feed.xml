@@ -7,6 +7,67 @@
     
       
         <item>
+          <title>Six Rules for Pull Requests That Actually Get Merged</title>
+          <description>&lt;p&gt;In professional software development, the code you write is only half of your job. The other half is getting that code &lt;strong&gt;merged.&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;We’ve all seen the “PR from Hell”: 1,200 lines across 40 files, a mix of logic, style changes, and unrelated fixes. These PRs are where productivity goes to die. They sit in the backlog for days because they are exhausting to review, and when they finally do get merged, they are magnets for bugs.&lt;/p&gt;
+
+&lt;p&gt;I’ve developed six golden rules that transform how teams ship code. This isn’t just a checklist—it’s a strategy to reduce &lt;strong&gt;cognitive load&lt;/strong&gt; for your team and increase your personal &lt;strong&gt;shipping velocity.&lt;/strong&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;1-do-exactly-one-thing&quot;&gt;1. Do Exactly One Thing&lt;/h2&gt;
+
+&lt;p&gt;The Single Responsibility Principle isn’t just for classes; it’s for Pull Requests. Every PR should solve one specific problem. When a PR does one thing, the reviewer’s mental model is stable. They know exactly what logic to look for. If you mix a bug fix with a new feature, you force the reviewer to context-switch mid-file.&lt;/p&gt;
+
+&lt;p&gt;If you discover an unrelated bug while working on a feature, resist the urge to fix it there. Branch off, fix the bug in a 5-line PR, and keep your feature branch clean.&lt;/p&gt;
+
+&lt;h2 id=&quot;2-keep-it-small&quot;&gt;2. Keep it Small&lt;/h2&gt;
+
+&lt;p&gt;There is a famous tweet: &lt;em&gt;“Ask a programmer to review 10 lines of code, they’ll find 10 issues. Ask them to review 500 lines, they’ll say ‘looks good’.”&lt;/em&gt;&lt;/p&gt;
+
+&lt;p&gt;Large PRs are impossible to audit thoroughly. By keeping your changes small (ideally under 200 lines), you ensure the reviewer actually reads every line rather than skimming. A PR should be reviewable in 15 minutes or less. If it’s bigger than that, you are essentially asking your teammates to spend their entire afternoon on your work.&lt;/p&gt;
+
+&lt;h2 id=&quot;3-separate-reformatting-from-logic&quot;&gt;3. Separate Reformatting from Logic&lt;/h2&gt;
+
+&lt;p&gt;Mixing “Prettier” updates or linting fixes with functional code changes is the fastest way to hide bugs. When a reviewer sees 50 lines of changed indentation, their brain starts to tune out. A malicious bug or a logic error can easily hide inside a wall of whitespace changes.&lt;/p&gt;
+
+&lt;p&gt;Always follow the “Two-PR Policy”: first PR is purely mechanical (renaming, reformatting, linting), second PR is purely functional (the actual logic change).&lt;/p&gt;
+
+&lt;h2 id=&quot;4-prove-it-works&quot;&gt;4. Prove It Works&lt;/h2&gt;
+
+&lt;p&gt;It is not the reviewer’s job to find out if your code works; it is your job to prove it to them. Every minute a reviewer spends checking if your code actually runs is a minute of wasted team time.&lt;/p&gt;
+
+&lt;p&gt;Every functional PR should include automated tests. If it’s a bug fix, include a regression test that fails without your changes and passes with them. This creates a permanent record that the problem is solved forever.&lt;/p&gt;
+
+&lt;h2 id=&quot;5-visual-evidence-for-frontend-changes&quot;&gt;5. Visual Evidence for Frontend Changes&lt;/h2&gt;
+
+&lt;p&gt;For any UI/UX change, a description is insufficient. “Changed the button padding” means different things to different people. Front-end code is visual, and reviewing it via text-based diffs is like trying to describe a painting over the phone.&lt;/p&gt;
+
+&lt;p&gt;Attach a screenshot or a screen recording (Loom/GIF) to the PR. This allows the reviewer to verify the look and feel immediately. Often, a reviewer will spot a layout glitch in your screenshot that they would have missed in the code.&lt;/p&gt;
+
+&lt;h2 id=&quot;6-own-the-pr-lifecycle&quot;&gt;6. Own the PR Lifecycle&lt;/h2&gt;
+
+&lt;p&gt;The PR is a conversation, not a hand-off. Your responsibility doesn’t end when you hit “Create Pull Request.” Code rot is real, and the longer a PR sits, the more likely it is to encounter merge conflicts.&lt;/p&gt;
+
+&lt;p&gt;Rebase regularly to ensure your branch is always compatible with &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;main&lt;/code&gt;. Monitor CI and fix failures immediately—don’t wait for a reviewer to tell you your tests are failing. Once you have the approvals, be the one to click merge and verify the deployment.&lt;/p&gt;
+
+&lt;h2 id=&quot;the-future-of-code-review-stacked-diffs&quot;&gt;The Future of Code Review: Stacked Diffs&lt;/h2&gt;
+
+&lt;p&gt;The best developers aren’t just the ones who write the smartest code; they are the ones who make it easiest for the team to move forward. By following these six rules, you reduce friction, build trust, and ensure that your code actually makes it to production.&lt;/p&gt;
+
+&lt;p&gt;The tooling around code reviews is evolving rapidly. &lt;a href=&quot;https://x.com/jaredpalmer/status/1999525369725215106&quot;&gt;Jared Palmer’s recent tweet&lt;/a&gt; on the future of pull requests highlight an emerging paradigm: stacked diffs. Instead of waiting for one PR to be reviewed before starting the next, stacked diffs let you build a chain of dependent changes that can be reviewed in parallel.&lt;/p&gt;
+
+&lt;p&gt;Tools like &lt;a href=&quot;https://graphite.dev&quot;&gt;Graphite&lt;/a&gt; have been pioneering this workflow, making it possible to break large features into small, reviewable chunks without the coordination overhead. The race is heating up—Cursor recently acquired Graphite, and GitHub is adding native stacked diff support. It’s clear that the industry recognizes a fundamental truth: in the AI age, where we can generate code faster than ever, we need better review tooling to keep pace.&lt;/p&gt;
+
+&lt;p&gt;The six rules above still apply, but the tooling is finally catching up to make them easier to follow. What is your “Golden Rule” for Pull Requests?&lt;/p&gt;
+</description>
+          <pubDate>2025-12-24T00:00:00+02:00</pubDate>
+          <link>https://taylorgibb.github.io/blog/six-rules-for-pull-requests-that-actually-get-merged</link>
+          <guid isPermaLink="true">https://taylorgibb.github.io/blog/six-rules-for-pull-requests-that-actually-get-merged</guid>
+        </item>
+      
+    
+      
+        <item>
           <title>Generating Large JSON Files</title>
           <description>&lt;p&gt;I recently had a customer with a requirement to expose an API that was capable of handling millions of JSON objects at a time. When the system was designed their inbound API only supported CSV. This design decision was made due to the large data involved. With CSV files, you include a header row which means the column names are not duplicated for each row, unlike JSON where each object would have a property name and its corresponding value. They gave me a small CSV file which contained a header row and an additional 145 objects. The file weighed in at just over &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;17KB&lt;/code&gt;. Converting that to JSON gave me 6527 lines of JSON (a &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;4400 percent increase&lt;/code&gt; in lines), weighing in at just over &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;205KB&lt;/code&gt;(a &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;1200 percent increase&lt;/code&gt; in file size). Even on small scale, the difference is noticeable. This data needed to be read and put into a database which is the subject of my next blog post, so stay tuned.&lt;/p&gt;
 
